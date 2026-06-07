@@ -126,9 +126,15 @@
   <section class="px-4 max-w-6xl mx-auto mb-16">
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-xl font-bold text-white">📊 Live Screener Results</h2>
-      <div class="flex items-center gap-2 text-green-400 text-xs">
-        <span class="pulse-dot w-2 h-2 rounded-full bg-green-400 inline-block"></span>
-        Update tiap 5 menit
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/15 border border-green-500/30">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
+          </span>
+          <span class="text-green-400 text-xs font-semibold tracking-wide">LIVE DATA IDX</span>
+        </div>
+        <span class="text-slate-500 text-xs" id="last-update-label">—</span>
       </div>
     </div>
 
@@ -351,6 +357,12 @@ buildTable(MOCK_STOCKS);
 
 // try live API
 fetch('/api/stocks').then(r => r.json()).then(d => {
+  // Update last-update label
+  const lbl = document.getElementById('last-update-label');
+  if (lbl && d.data && d.data.length > 0 && d.data[0].updated_at) {
+    const dt = new Date(d.data[0].updated_at + 'Z');
+    lbl.textContent = 'Update: ' + dt.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) + ' WIB';
+  }
   if (d.data && d.data.length > 0) buildTable(d.data);
 }).catch(() => {});
 </script>
