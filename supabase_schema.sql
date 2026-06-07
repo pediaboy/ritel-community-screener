@@ -1,54 +1,66 @@
--- ────────────────────────────────────────────
--- RITEL COMMUNITY SCREENER — Database Schema
--- Run this in your Supabase SQL Editor
--- ────────────────────────────────────────────
+-- ─────────────────────────────────────────
+-- Ritel Community Screener — Supabase Schema v2
+-- Run di Supabase SQL Editor
+-- ─────────────────────────────────────────
 
--- 1. USERS TABLE
-CREATE TABLE IF NOT EXISTS public.users (
-  id          uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  phone_number text UNIQUE NOT NULL,
-  name        text,
-  status      text DEFAULT 'Free' CHECK (status IN ('Free', 'VIP')),
-  created_at  timestamp WITH TIME ZONE DEFAULT now()
+-- COMPANIES TABLE (dari GoAPI IDX)
+create table if not exists companies (
+  id           bigserial primary key,
+  symbol       varchar(10) not null unique,
+  name         text,
+  logo         text,
+  sector       text,
+  sub_sector   text,
+  industry     text,
+  listing_date date,
+  created_at   timestamptz default now(),
+  updated_at   timestamptz default now()
+);
+create index if not exists idx_companies_symbol on companies(symbol);
+create index if not exists idx_companies_name on companies using gin(to_tsvector('simple', coalesce(name,'')));
+
+-- API LOGS TABLE
+create table if not exists api_logs (
+  id           bigserial primary key,
+  service_name varchar(100) not null,
+  status       varchar(20) not null,  -- SUCCESS | ERROR | WARNING
+  message      text,
+  created_at   timestamptz default now()
+);
+create index if not exists idx_api_logs_service on api_logs(service_name);
+create index if not exists idx_api_logs_created on api_logs(created_at desc);
+
+-- STOCKS DATA TABLE (harga real-time via yfinance)
+create table if not exists stocks_data (
+  id         bigserial primary key,
+  ticker     varchar(10) not null unique,
+  price      numeric(15,2),
+  volume     numeric(20,0),
+  updated_at timestamptz default now()
+);
+create index if not exists idx_stocks_ticker on stocks_data(ticker);
+create index if not exists idx_stocks_volume on stocks_data(volume desc);
+
+-- USERS TABLE
+create table if not exists users (
+  id           bigserial primary key,
+  phone_number varchar(20) unique,
+  name         text,
+  status       varchar(10) default 'Free',  -- Free | VIP
+  created_at   timestamptz default now(),
+  updated_at   timestamptz default now()
 );
 
--- 2. STOCKS_DATA TABLE
-CREATE TABLE IF NOT EXISTS public.stocks_data (
-  ticker      text PRIMARY KEY,
-  price       numeric,
-  volume      numeric,
-  updated_at  timestamp WITH TIME ZONE DEFAULT now()
+-- SCREENER ALERTS TABLE
+create table if not exists screener_alerts (
+  id                   bigserial primary key,
+  ticker               varchar(10) not null,
+  price                numeric(15,2),
+  indicator_triggered  text,
+  timestamp            timestamptz default now()
 );
+create index if not exists idx_alerts_timestamp on screener_alerts(timestamp desc);
 
--- 3. SCREENER_ALERTS TABLE
-CREATE TABLE IF NOT EXISTS public.screener_alerts (
-  id                 serial PRIMARY KEY,
-  ticker             text NOT NULL,
-  price              numeric,
-  indicator_triggered text,
-  timestamp          timestamp WITH TIME ZONE DEFAULT now()
-);
-
--- Enable Row Level Security (optional — disable for admin service role)
-ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.stocks_data ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.screener_alerts ENABLE ROW LEVEL SECURITY;
-
--- Allow service_role full access (bypass RLS)
-CREATE POLICY "service_role_all" ON public.users FOR ALL USING (true);
-CREATE POLICY "service_role_all" ON public.stocks_data FOR ALL USING (true);
-CREATE POLICY "service_role_all" ON public.screener_alerts FOR ALL USING (true);
-
--- Grant anon read on stocks & alerts (public data)
-CREATE POLICY "anon_read_stocks" ON public.stocks_data FOR SELECT TO anon USING (true);
-CREATE POLICY "anon_read_alerts" ON public.screener_alerts FOR SELECT TO anon USING (true);
-
--- Sample data
-INSERT INTO public.stocks_data (ticker, price, volume) VALUES
-  ('BBRI', 4820, 210000000),
-  ('AMMN', 8750, 145000000),
-  ('TLKM', 3740, 98000000),
-  ('ASII', 5200, 76000000),
-  ('BMRI', 6100, 132000000)
-ON CONFLICT (ticker) DO NOTHING;
-
+-- Enable RLS (Row Level Security) — opsional
+-- alter table companies enable row level security;
+-- alter table api_logs enable row level security;

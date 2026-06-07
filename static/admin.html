@@ -7,165 +7,197 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-    * { box-sizing: border-box; }
+    * { box-sizing:border-box; }
     body { font-family:'Inter',sans-serif; background:#050510; color:#e2e8f0; margin:0; padding:0; }
-    .neon-text  { color:#7c5cff; }
-    .neon-border{ border:1px solid rgba(124,92,255,0.4); box-shadow:0 0 12px rgba(124,92,255,0.15); }
-    .neon-btn   { background:linear-gradient(135deg,#7c5cff,#a78bfa); transition:all .3s; border:none; cursor:pointer; }
-    .neon-btn:hover { box-shadow:0 0 20px rgba(124,92,255,0.6); }
-    .glass-card { background:rgba(255,255,255,0.03); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.07); border-radius:16px; }
-    .input-field{ width:100%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:10px; padding:12px 14px; color:#fff; font-size:0.9rem; outline:none; transition:border-color .2s; }
+    .neon-text   { color:#7c5cff; }
+    .neon-btn    { background:linear-gradient(135deg,#7c5cff,#a78bfa); border:none; cursor:pointer; transition:all .3s; }
+    .neon-btn:hover { box-shadow:0 0 20px rgba(124,92,255,.6); }
+    .neon-btn:disabled { opacity:.5; cursor:not-allowed; }
+    .danger-btn  { background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.25); color:#f87171; border-radius:8px; padding:5px 12px; font-size:.75rem; cursor:pointer; }
+    .input-field { width:100%; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:10px; padding:12px 14px; color:#fff; font-size:.875rem; outline:none; transition:border-color .2s; }
     .input-field:focus { border-color:#7c5cff; }
     .input-field::placeholder { color:#4a5568; }
-
-    /* BOTTOM NAV */
-    #bottom-nav { position:fixed; bottom:0; left:0; right:0; background:rgba(5,5,16,0.95); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,0.07); z-index:100; padding-bottom:env(safe-area-inset-bottom); }
-    .nav-item { display:flex; flex-direction:column; align-items:center; padding:10px 0 8px; flex:1; cursor:pointer; color:#64748b; font-size:0.6rem; font-weight:500; letter-spacing:0.03em; transition:color .2s; gap:3px; }
+    .form-card   { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); border-radius:16px; padding:18px; margin-bottom:14px; }
+    .form-card h3{ font-size:.9rem; font-weight:600; color:#c4b5fd; margin:0 0 14px; display:flex; align-items:center; gap:8px; }
+    .form-stack  { display:flex; flex-direction:column; gap:10px; }
+    .stat-grid   { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+    .stat-card   { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:14px 12px; text-align:center; }
+    .stat-num    { font-size:1.8rem; font-weight:800; line-height:1; }
+    .stat-lbl    { font-size:.65rem; color:#64748b; margin-top:4px; text-transform:uppercase; letter-spacing:.05em; }
+    .mobile-list { display:flex; flex-direction:column; gap:7px; }
+    .list-item   { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    .badge       { display:inline-block; padding:2px 8px; border-radius:20px; font-size:.68rem; font-weight:600; white-space:nowrap; }
+    .badge-vip   { background:rgba(250,204,21,.15); color:#fbbf24; border:1px solid rgba(250,204,21,.3); }
+    .badge-free  { background:rgba(100,116,139,.15); color:#94a3b8; border:1px solid rgba(100,116,139,.2); }
+    .badge-ok    { background:rgba(74,222,128,.15); color:#4ade80; border:1px solid rgba(74,222,128,.3); }
+    .badge-err   { background:rgba(239,68,68,.15); color:#f87171; border:1px solid rgba(239,68,68,.3); }
+    .badge-online{ background:rgba(74,222,128,.15); color:#4ade80; border:1px solid rgba(74,222,128,.3); font-size:.72rem; padding:3px 10px; }
+    .badge-offline{background:rgba(239,68,68,.15); color:#f87171; border:1px solid rgba(239,68,68,.3); font-size:.72rem; padding:3px 10px; }
+    .section-title{ font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:14px; }
+    #bottom-nav  { position:fixed; bottom:0; left:0; right:0; background:rgba(5,5,16,.96); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,.07); z-index:100; padding-bottom:env(safe-area-inset-bottom); }
+    .nav-item    { display:flex; flex-direction:column; align-items:center; padding:9px 0 7px; flex:1; cursor:pointer; color:#64748b; font-size:.58rem; font-weight:500; gap:2px; transition:color .2s; }
     .nav-item.active { color:#a78bfa; }
-    .nav-item .icon { font-size:1.3rem; line-height:1; }
-
-    /* MAIN */
-    #main-content { padding: 16px 16px 90px; max-width:600px; margin:0 auto; }
-
-    /* CARDS */
-    .stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
-    .stat-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:16px; text-align:center; }
-    .stat-num  { font-size:2rem; font-weight:800; line-height:1; }
-    .stat-label{ font-size:0.72rem; color:#64748b; margin-top:4px; letter-spacing:0.04em; text-transform:uppercase; }
-
-    /* SECTION HEADER */
-    .section-title { font-size:1.3rem; font-weight:700; color:#fff; margin-bottom:16px; }
-
-    /* FORM CARD */
-    .form-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09); border-radius:16px; padding:18px; margin-bottom:16px; }
-    .form-card h3 { font-size:0.95rem; font-weight:600; color:#c4b5fd; margin:0 0 14px; display:flex; align-items:center; gap:8px; }
-    .form-stack { display:flex; flex-direction:column; gap:10px; }
-
-    /* TABLE MOBILE */
-    .mobile-list { display:flex; flex-direction:column; gap:8px; }
-    .mobile-list-item { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:14px; display:flex; justify-content:space-between; align-items:center; }
-
-    /* TOAST */
-    .toast { position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:999; background:#1e1b4b; border:1px solid #7c5cff; border-radius:12px; padding:12px 20px; color:#c4b5fd; font-size:0.85rem; text-align:center; white-space:nowrap; box-shadow:0 8px 32px rgba(0,0,0,0.4); transition:opacity .4s; }
-
-    /* BADGE */
-    .badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:0.7rem; font-weight:600; }
-    .badge-vip  { background:rgba(250,204,21,0.15); color:#fbbf24; border:1px solid rgba(250,204,21,0.3); }
-    .badge-free { background:rgba(100,116,139,0.15); color:#94a3b8; border:1px solid rgba(100,116,139,0.2); }
-
-    /* DELETE BTN */
-    .del-btn { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); color:#f87171; border-radius:8px; padding:4px 10px; font-size:0.75rem; cursor:pointer; }
+    .nav-item .icon { font-size:1.2rem; line-height:1; }
+    #main-content{ padding:14px 15px 95px; max-width:600px; margin:0 auto; }
+    .toast { position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:999; background:#1e1b4b; border:1px solid #7c5cff; border-radius:12px; padding:11px 18px; color:#c4b5fd; font-size:.82rem; text-align:center; white-space:nowrap; box-shadow:0 8px 32px rgba(0,0,0,.4); transition:opacity .4s; pointer-events:none; }
+    .table-wrap  { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); border-radius:14px; overflow:hidden; }
+    .table-head  { padding:11px 14px; border-bottom:1px solid rgba(255,255,255,.07); display:flex; justify-content:space-between; align-items:center; }
+    .log-item    { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,.04); font-size:.78rem; }
+    .log-item:last-child { border-bottom:none; }
+    .ping-dot    { display:inline-block; width:8px; height:8px; border-radius:50%; background:#4ade80; box-shadow:0 0 6px #4ade80; margin-right:6px; }
   </style>
 </head>
 <body>
 
-<!-- ══════════ LOGIN ══════════ -->
+<!-- ══ LOGIN ══ -->
 <div id="login-screen" class="min-h-screen flex items-center justify-center px-5">
   <div class="w-full max-w-sm">
-    <div class="text-center mb-8">
-      <div class="text-5xl mb-4">🔐</div>
-      <h1 class="text-2xl font-bold text-white">Admin Login</h1>
-      <p class="text-slate-500 text-sm mt-1">Ritel Community.ID CMS</p>
+    <div class="text-center mb-7">
+      <div class="text-5xl mb-3">🔐</div>
+      <h1 class="text-xl font-bold text-white">Admin Login</h1>
+      <p class="text-slate-500 text-xs mt-1">Ritel Community.ID CMS v4</p>
     </div>
     <div class="form-card">
       <div class="form-stack">
         <input id="login-password" type="password" placeholder="Admin secret key" class="input-field"
-               onkeydown="if(event.key==='Enter')doLogin()" />
-        <button onclick="doLogin()" class="neon-btn w-full text-white py-3 rounded-xl font-semibold text-sm">
-          Masuk ke Dashboard →
-        </button>
-        <p id="login-error" class="text-red-400 text-sm text-center hidden">Password salah. Coba lagi.</p>
+               onkeydown="if(event.key==='Enter')doLogin()"/>
+        <button onclick="doLogin()" class="neon-btn w-full text-white py-3 rounded-xl font-semibold text-sm">Masuk →</button>
+        <p id="login-error" class="text-red-400 text-xs text-center hidden">Password salah.</p>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ══════════ DASHBOARD ══════════ -->
+<!-- ══ DASHBOARD ══ -->
 <div id="admin-dashboard" class="hidden">
 
   <!-- TOP BAR -->
-  <div style="background:rgba(5,5,16,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.07);padding:14px 16px;position:sticky;top:0;z-index:50;">
-    <div class="flex items-center justify-between max-w-600 mx-auto">
+  <div style="background:rgba(5,5,16,.96);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.07);padding:12px 15px;position:sticky;top:0;z-index:50;">
+    <div class="flex items-center justify-between" style="max-width:600px;margin:0 auto;">
       <div>
         <div class="font-bold text-white text-sm">RITEL COMMUNITY<span class="neon-text">.ID</span></div>
-        <div class="text-slate-500 text-xs">Admin CMS</div>
+        <div class="text-slate-500 text-xs">Admin CMS v4</div>
       </div>
       <div class="flex items-center gap-3">
-        <a href="/" class="text-slate-500 text-xs hover:text-slate-300 transition">← Site</a>
-        <div class="w-2 h-2 rounded-full bg-green-400" style="box-shadow:0 0 6px #4ade80" title="Online"></div>
+        <span id="goapi-badge" class="badge badge-offline">● OFFLINE</span>
+        <a href="/" class="text-slate-500 text-xs hover:text-slate-300">← Site</a>
       </div>
     </div>
   </div>
 
-  <!-- MAIN CONTENT -->
+  <!-- CONTENT -->
   <div id="main-content">
 
     <!-- ── OVERVIEW ── -->
     <div id="tab-overview" class="tab-panel">
-      <p class="text-slate-400 text-xs mb-4 mt-1">Selamat datang, Admin 👋</p>
+      <p class="text-slate-400 text-xs mb-3 mt-0.5">Selamat datang, Admin 👋</p>
 
       <div class="stat-grid">
-        <div class="stat-card neon-border">
+        <div class="stat-card neon-border" style="border-color:rgba(124,92,255,.3)">
           <div class="stat-num neon-text" id="stat-users">—</div>
-          <div class="stat-label">Total Users</div>
+          <div class="stat-lbl">Total Users</div>
         </div>
-        <div class="stat-card" style="border-color:rgba(74,222,128,0.3)">
+        <div class="stat-card" style="border-color:rgba(74,222,128,.3)">
           <div class="stat-num" style="color:#4ade80" id="stat-vip">—</div>
-          <div class="stat-label">VIP Users</div>
+          <div class="stat-lbl">VIP Users</div>
         </div>
-        <div class="stat-card" style="border-color:rgba(251,191,36,0.3)">
+        <div class="stat-card" style="border-color:rgba(251,191,36,.3)">
           <div class="stat-num" style="color:#fbbf24" id="stat-stocks">—</div>
-          <div class="stat-label">Stocks Tracked</div>
+          <div class="stat-lbl">Stocks Tracked</div>
         </div>
-        <div class="stat-card" style="border-color:rgba(96,165,250,0.3)">
-          <div class="stat-num" style="color:#60a5fa" id="stat-alerts">—</div>
-          <div class="stat-label">Alerts Today</div>
+        <div class="stat-card" style="border-color:rgba(96,165,250,.3)">
+          <div class="stat-num" style="color:#60a5fa" id="stat-companies">—</div>
+          <div class="stat-lbl">Total Companies</div>
         </div>
       </div>
 
+      <!-- GoAPI Widget -->
+      <div class="form-card" style="margin-bottom:14px">
+        <h3>🌐 GoAPI IDX Status</h3>
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <div id="goapi-status-text" class="text-white text-sm font-semibold">Mengecek...</div>
+            <div id="goapi-last-sync" class="text-slate-500 text-xs mt-0.5">Last sync: —</div>
+          </div>
+          <span id="goapi-status-badge" class="badge badge-offline">OFFLINE</span>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="checkGoApiStatus()" class="flex-1 text-white py-2 rounded-xl font-medium text-xs" style="background:rgba(124,92,255,.2);border:1px solid rgba(124,92,255,.3);">
+            🔄 Cek Status
+          </button>
+          <button onclick="syncCompanies()" id="btn-sync" class="flex-1 neon-btn text-white py-2 rounded-xl font-medium text-xs">
+            📥 Sync Companies
+          </button>
+        </div>
+        <div id="sync-result" class="text-slate-500 text-xs mt-2 hidden"></div>
+      </div>
+
+      <!-- Stock Scraper -->
       <div class="form-card">
-        <h3>⚡ Scraping Data</h3>
-        <p class="text-slate-400 text-xs mb-4">Trigger scraping manual seluruh saham IDX. Proses berjalan di background (~2-3 menit).</p>
-        <button onclick="forceScrape()" class="neon-btn w-full text-white py-3 rounded-xl font-semibold text-sm">
+        <h3>⚡ Scraping Harga Saham</h3>
+        <p class="text-slate-400 text-xs mb-3">Ambil harga terbaru seluruh saham IDX via yfinance. ~2-3 menit.</p>
+        <button onclick="forceScrape()" id="btn-scrape" class="neon-btn w-full text-white py-3 rounded-xl font-semibold text-sm">
           ⚡ Force Scrape Sekarang
         </button>
-        <div id="scrape-status" class="text-slate-500 text-xs text-center mt-3 hidden"></div>
+        <div id="scrape-msg" class="text-slate-500 text-xs text-center mt-2 hidden"></div>
       </div>
 
+      <!-- DB Status -->
       <div class="form-card">
-        <h3>📊 Status Database</h3>
+        <h3>🗄️ Database Status</h3>
         <div id="db-status" class="text-slate-400 text-sm">Memuat...</div>
+      </div>
+    </div>
+
+    <!-- ── COMPANIES ── -->
+    <div id="tab-companies" class="tab-panel hidden">
+      <div class="section-title">🏢 Companies IDX</div>
+
+      <div class="form-card">
+        <div class="form-stack">
+          <input id="co-search" type="text" placeholder="🔍 Cari ticker atau nama perusahaan..." class="input-field"
+                 oninput="debounceSearch()" />
+          <div class="flex gap-2 items-center">
+            <span class="text-slate-400 text-xs" id="co-count">Total: —</span>
+            <button onclick="syncCompanies()" class="text-xs text-purple-400 hover:text-purple-300 ml-auto">↻ Refresh</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-head">
+          <span class="text-sm font-semibold text-white">Daftar Perusahaan</span>
+          <div class="flex gap-2">
+            <button onclick="coPage--; loadCompanies()" id="btn-prev" class="text-slate-400 text-xs px-2 py-1 rounded" style="background:rgba(255,255,255,.05)">‹</button>
+            <span id="co-page-info" class="text-slate-500 text-xs self-center px-1">—</span>
+            <button onclick="coPage++; loadCompanies()" id="btn-next" class="text-slate-400 text-xs px-2 py-1 rounded" style="background:rgba(255,255,255,.05)">›</button>
+          </div>
+        </div>
+        <div id="companies-list" class="p-3">
+          <p class="text-slate-500 text-sm text-center py-6">Loading...</p>
+        </div>
       </div>
     </div>
 
     <!-- ── USERS ── -->
     <div id="tab-users" class="tab-panel hidden">
       <div class="section-title">👥 User Management</div>
-
       <div class="form-card">
         <h3>⬆️ Upgrade ke VIP</h3>
         <div class="form-stack">
           <input id="upgrade-phone" type="tel" placeholder="Nomor HP (cth: 08123456789)" class="input-field"/>
-          <button onclick="upgradeUser()" class="neon-btn w-full text-white py-3 rounded-xl font-semibold text-sm">
-            Upgrade ke VIP
-          </button>
+          <button onclick="upgradeUser()" class="neon-btn w-full text-white py-3 rounded-xl font-semibold text-sm">Upgrade ke VIP</button>
         </div>
       </div>
-
-      <div class="form-card" style="padding:0;overflow:hidden;">
-        <div style="padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.07)">
-          <span class="text-sm font-semibold text-white">Daftar User</span>
-        </div>
-        <div id="users-list" class="p-4">
-          <p class="text-slate-500 text-sm text-center py-4">Loading...</p>
-        </div>
+      <div class="table-wrap">
+        <div class="table-head"><span class="text-sm font-semibold text-white">Daftar User</span></div>
+        <div id="users-list" class="p-3"><p class="text-slate-500 text-sm text-center py-6">Loading...</p></div>
       </div>
     </div>
 
     <!-- ── STOCKS ── -->
     <div id="tab-stocks" class="tab-panel hidden">
       <div class="section-title">📈 Stock Management</div>
-
       <div class="form-card">
         <h3>➕ Tambah / Edit Saham</h3>
         <div class="form-stack">
@@ -174,26 +206,18 @@
             <input id="s-price" type="number" placeholder="Harga (Rp)" class="input-field"/>
             <input id="s-volume" type="number" placeholder="Volume" class="input-field"/>
           </div>
-          <button onclick="upsertStock()" class="neon-btn w-full text-white py-3 rounded-xl font-semibold text-sm">
-            💾 Simpan Saham
-          </button>
+          <button onclick="upsertStock()" class="neon-btn w-full text-white py-3 rounded-xl font-semibold text-sm">💾 Simpan Saham</button>
         </div>
       </div>
-
-      <div class="form-card" style="padding:0;overflow:hidden;">
-        <div style="padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.07)">
-          <span class="text-sm font-semibold text-white">Data Saham</span>
-        </div>
-        <div id="stocks-list" class="p-4">
-          <p class="text-slate-500 text-sm text-center py-4">Loading...</p>
-        </div>
+      <div class="table-wrap">
+        <div class="table-head"><span class="text-sm font-semibold text-white">Data Saham (Top 30 Volume)</span></div>
+        <div id="stocks-list" class="p-3"><p class="text-slate-500 text-sm text-center py-6">Loading...</p></div>
       </div>
     </div>
 
     <!-- ── ALERTS ── -->
     <div id="tab-alerts" class="tab-panel hidden">
       <div class="section-title">🚨 Manual Alert</div>
-
       <div class="form-card">
         <h3>📢 Kirim Alert Telegram</h3>
         <div class="form-stack">
@@ -201,46 +225,22 @@
           <input id="a-price" type="number" placeholder="Harga saat ini (Rp)" class="input-field"/>
           <input id="a-indicator" type="text" placeholder="Indikator (cth: MA20 Golden Cross)" class="input-field"/>
           <input id="a-chatid" type="text" placeholder="Telegram Chat ID (opsional)" class="input-field"/>
-          <button onclick="createAlert()" class="neon-btn w-full text-white py-3 rounded-xl font-semibold text-sm">
-            🚀 Kirim Alert
-          </button>
+          <button onclick="createAlert()" class="neon-btn w-full text-white py-3 rounded-xl font-semibold text-sm">🚀 Kirim Alert</button>
         </div>
       </div>
-
-      <div class="form-card" style="padding:0;overflow:hidden;">
-        <div style="padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.07)">
-          <span class="text-sm font-semibold text-white">Alert Terbaru</span>
-        </div>
-        <div id="alerts-list" class="p-4">
-          <p class="text-slate-500 text-sm text-center py-4">Loading...</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── KONTEN ── -->
-    <div id="tab-content" class="tab-panel hidden">
-      <div class="section-title">✍️ Manajemen Konten</div>
-
-      <div class="form-card">
-        <h3>❓ Tambah FAQ</h3>
-        <div class="form-stack">
-          <input id="faq-q" type="text" placeholder="Pertanyaan" class="input-field"/>
-          <textarea id="faq-a" placeholder="Jawaban" class="input-field" rows="3" style="resize:vertical;"></textarea>
-          <button onclick="saveFaq()" class="neon-btn w-full text-white py-3 rounded-xl font-semibold text-sm">
-            💾 Simpan FAQ
-          </button>
-        </div>
+      <div class="table-wrap">
+        <div class="table-head"><span class="text-sm font-semibold text-white">Alert Terbaru</span></div>
+        <div id="alerts-list" class="p-3"><p class="text-slate-500 text-sm text-center py-6">Loading...</p></div>
       </div>
 
-      <div class="form-card">
-        <h3>📣 Buat Pengumuman</h3>
-        <div class="form-stack">
-          <input id="ann-title" type="text" placeholder="Judul pengumuman" class="input-field"/>
-          <textarea id="ann-body" placeholder="Isi pengumuman..." class="input-field" rows="4" style="resize:vertical;"></textarea>
-          <button onclick="saveAnnouncement()" class="neon-btn w-full text-white py-3 rounded-xl font-semibold text-sm">
-            📤 Publish Pengumuman
-          </button>
+      <!-- API Logs -->
+      <div class="section-title mt-4">📋 API Logs</div>
+      <div class="table-wrap">
+        <div class="table-head">
+          <span class="text-sm font-semibold text-white">Log Terbaru</span>
+          <button onclick="loadLogs()" class="text-xs text-purple-400">↻ Refresh</button>
         </div>
+        <div id="logs-list"><p class="text-slate-500 text-sm text-center py-6 px-4">Loading...</p></div>
       </div>
     </div>
 
@@ -250,259 +250,322 @@
   <nav id="bottom-nav">
     <div style="display:flex;">
       <div class="nav-item active" onclick="showTab('overview')" id="nav-overview">
-        <span class="icon">📊</span>
-        <span>Overview</span>
+        <span class="icon">📊</span><span>Overview</span>
+      </div>
+      <div class="nav-item" onclick="showTab('companies')" id="nav-companies">
+        <span class="icon">🏢</span><span>Companies</span>
       </div>
       <div class="nav-item" onclick="showTab('users')" id="nav-users">
-        <span class="icon">👥</span>
-        <span>Users</span>
+        <span class="icon">👥</span><span>Users</span>
       </div>
       <div class="nav-item" onclick="showTab('stocks')" id="nav-stocks">
-        <span class="icon">📈</span>
-        <span>Stocks</span>
+        <span class="icon">📈</span><span>Stocks</span>
       </div>
       <div class="nav-item" onclick="showTab('alerts')" id="nav-alerts">
-        <span class="icon">🚨</span>
-        <span>Alerts</span>
-      </div>
-      <div class="nav-item" onclick="showTab('content')" id="nav-content">
-        <span class="icon">✍️</span>
-        <span>Konten</span>
+        <span class="icon">🚨</span><span>Alerts</span>
       </div>
     </div>
   </nav>
+</div>
 
-</div><!-- end admin-dashboard -->
-
-<!-- TOAST -->
 <div id="toast" class="toast hidden"></div>
 
 <script>
-  let ADMIN_SECRET = '';
-  let currentTab = 'overview';
+let ADMIN_SECRET = '';
+let coPage = 0;
+const CO_LIMIT = 20;
+let coTotal = 0;
+let coSearch = '';
+let searchTimer = null;
 
-  // ── LOGIN ──
-  function doLogin() {
-    const pw = document.getElementById('login-password').value.trim();
-    if (!pw) return;
-    ADMIN_SECRET = pw;
-    document.getElementById('login-screen').classList.add('hidden');
-    document.getElementById('admin-dashboard').classList.remove('hidden');
-    loadOverview();
-    loadUsers();
-    loadStocks();
-    loadAlerts();
-  }
+// ── LOGIN ──
+function doLogin() {
+  const pw = document.getElementById('login-password').value.trim();
+  if (!pw) return;
+  ADMIN_SECRET = pw;
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('admin-dashboard').classList.remove('hidden');
+  initDashboard();
+}
 
-  // ── TABS ──
-  function showTab(name) {
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById('tab-' + name).classList.remove('hidden');
-    document.getElementById('nav-' + name).classList.add('active');
-    currentTab = name;
-    window.scrollTo(0, 0);
-  }
+function initDashboard() {
+  loadOverview();
+  loadUsers();
+  loadStocks();
+  loadAlerts();
+  loadLogs();
+  checkGoApiStatus();
+}
 
-  // ── TOAST ──
-  function showToast(msg, isError = false) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.style.background = isError ? '#2d1515' : '#1e1b4b';
-    t.style.borderColor = isError ? '#ef4444' : '#7c5cff';
-    t.style.color = isError ? '#fca5a5' : '#c4b5fd';
-    t.classList.remove('hidden');
-    setTimeout(() => t.classList.add('hidden'), 3000);
-  }
+// ── TABS ──
+function showTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.remove('hidden');
+  document.getElementById('nav-' + name).classList.add('active');
+  if (name === 'companies') loadCompanies();
+  window.scrollTo(0, 0);
+}
 
-  // ── API HELPER ──
-  async function api(method, path, body = null) {
-    const opts = {
-      method,
-      headers: { 'Content-Type': 'application/json', 'x-admin-secret': ADMIN_SECRET }
-    };
-    if (body) opts.body = JSON.stringify(body);
-    const r = await fetch(path, opts);
-    return r.json();
-  }
+// ── TOAST ──
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? '#2d1515' : '#1e1b4b';
+  t.style.borderColor = err ? '#ef4444' : '#7c5cff';
+  t.style.color = err ? '#fca5a5' : '#c4b5fd';
+  t.classList.remove('hidden');
+  setTimeout(() => t.classList.add('hidden'), 3000);
+}
 
-  // ── OVERVIEW ──
-  async function loadOverview() {
-    try {
-      const [users, stocks, alerts] = await Promise.all([
-        api('GET', '/api/admin/users'),
-        api('GET', '/api/stocks'),
-        api('GET', '/api/alerts'),
-      ]);
-      const allUsers = users.data || [];
-      const vip = allUsers.filter(u => u.status === 'VIP').length;
-      document.getElementById('stat-users').textContent  = allUsers.length;
-      document.getElementById('stat-vip').textContent    = vip;
-      document.getElementById('stat-stocks').textContent = (stocks.data || []).length;
-      document.getElementById('stat-alerts').textContent = (alerts.data || []).length;
+// ── API HELPER ──
+async function api(method, path, body=null) {
+  const opts = { method, headers: {'Content-Type':'application/json','x-admin-secret':ADMIN_SECRET} };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(path, opts);
+  return r.json();
+}
 
-      // DB status
-      const st = document.getElementById('db-status');
-      const latestStock = (stocks.data || [])[0];
-      if (latestStock) {
-        const dt = new Date(latestStock.updated_at + 'Z');
-        st.innerHTML = `<span class="text-green-400 font-semibold">● Online</span> &nbsp;·&nbsp; ${(stocks.data||[]).length} saham di database &nbsp;·&nbsp; Update terakhir: ${dt.toLocaleString('id-ID')}`;
-      } else {
-        st.textContent = 'Database kosong — jalankan Force Scrape untuk mengisi data.';
-      }
-    } catch(e) {
-      console.error(e);
+// ── OVERVIEW ──
+async function loadOverview() {
+  try {
+    const [users, stocks, alerts, coStatus] = await Promise.all([
+      api('GET','/api/admin/users'),
+      api('GET','/api/stocks'),
+      api('GET','/api/alerts'),
+      fetch('/api/companies/sync-status').then(r=>r.json()),
+    ]);
+    const allU = users.data || [];
+    document.getElementById('stat-users').textContent    = allU.length;
+    document.getElementById('stat-vip').textContent      = allU.filter(u=>u.status==='VIP').length;
+    document.getElementById('stat-stocks').textContent   = (stocks.data||[]).length;
+    document.getElementById('stat-companies').textContent= coStatus.total || 0;
+
+    // Last sync
+    if (coStatus.last_sync) {
+      const dt = new Date(coStatus.last_sync);
+      document.getElementById('goapi-last-sync').textContent =
+        'Last sync: ' + dt.toLocaleString('id-ID');
     }
-  }
 
-  async function forceScrape() {
-    const btn = event.target;
-    btn.disabled = true;
-    btn.textContent = '⏳ Memulai scrape...';
-    const st = document.getElementById('scrape-status');
-    st.classList.remove('hidden');
-    st.textContent = 'Scraping berjalan di background...';
-    try {
-      const r = await api('POST', '/api/admin/force-scrape');
-      showToast('✅ ' + (r.message || 'Scrape dimulai!'));
-      st.textContent = '✅ ' + (r.message || 'Scrape dimulai! Tunggu 2-3 menit.');
-    } catch(e) {
-      showToast('❌ Gagal: ' + e.message, true);
+    // DB status
+    const st = document.getElementById('db-status');
+    const s0 = (stocks.data||[])[0];
+    if (s0) {
+      const dt = new Date(s0.updated_at + (s0.updated_at.endsWith('Z')?'':'Z'));
+      st.innerHTML = `<span class="text-green-400">● Online</span> &nbsp;·&nbsp; <b>${(stocks.data||[]).length}</b> saham &nbsp;·&nbsp; Update: ${dt.toLocaleString('id-ID')} &nbsp;·&nbsp; <b>${coStatus.total||0}</b> companies terdaftar`;
+    } else {
+      st.innerHTML = '<span class="text-yellow-400">⚠ Belum ada data.</span> Jalankan Force Scrape & Sync Companies.';
     }
-    btn.disabled = false;
-    btn.textContent = '⚡ Force Scrape Sekarang';
-  }
+  } catch(e) { console.error(e); }
+}
 
-  // ── USERS ──
-  async function loadUsers() {
-    const r = await api('GET', '/api/admin/users');
-    const list = document.getElementById('users-list');
-    const users = r.data || [];
-    if (!users.length) {
-      list.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">Belum ada user terdaftar.</p>';
+// ── GOAPI STATUS ──
+async function checkGoApiStatus() {
+  const badge    = document.getElementById('goapi-badge');
+  const badge2   = document.getElementById('goapi-status-badge');
+  const statusTx = document.getElementById('goapi-status-text');
+  try {
+    const r = await api('GET', '/api/admin/goapi-status');
+    const online = r.online;
+    const cls    = online ? 'badge-online' : 'badge-offline';
+    const lbl    = online ? '● ONLINE' : '● OFFLINE';
+    badge.className  = 'badge ' + cls;
+    badge2.className = 'badge ' + cls;
+    badge.textContent = badge2.textContent = lbl;
+    statusTx.textContent = online ? 'GoAPI IDX aktif dan merespons ✓' : 'GoAPI tidak dapat dihubungi ✗';
+    statusTx.style.color = online ? '#4ade80' : '#f87171';
+  } catch(e) {
+    badge.textContent = badge2.textContent = '● ERROR';
+    statusTx.textContent = 'Gagal cek status';
+  }
+}
+
+// ── SYNC COMPANIES ──
+async function syncCompanies() {
+  const btn = document.getElementById('btn-sync');
+  const res = document.getElementById('sync-result');
+  btn.disabled = true; btn.textContent = '⏳ Syncing...';
+  res.classList.remove('hidden');
+  res.textContent = 'Sync dari GoAPI berjalan di background...';
+  try {
+    const r = await api('POST', '/api/admin/sync-companies');
+    showToast('✅ ' + r.message);
+    res.textContent = '✅ ' + r.message;
+    setTimeout(loadOverview, 3000);
+  } catch(e) {
+    showToast('❌ Sync gagal', true);
+    res.textContent = '❌ Gagal: ' + e.message;
+  }
+  btn.disabled = false; btn.textContent = '📥 Sync Companies';
+}
+
+// ── FORCE SCRAPE ──
+async function forceScrape() {
+  const btn = document.getElementById('btn-scrape');
+  const msg = document.getElementById('scrape-msg');
+  btn.disabled = true; btn.textContent = '⏳ Memulai...';
+  msg.classList.remove('hidden'); msg.textContent = 'Scraping berjalan di background (~2-3 menit)...';
+  try {
+    const r = await api('POST', '/api/admin/force-scrape');
+    showToast('✅ ' + (r.message || 'Scrape dimulai!'));
+    msg.textContent = '✅ ' + (r.message || 'Scrape dimulai!');
+  } catch(e) { showToast('❌ Gagal scrape', true); }
+  btn.disabled = false; btn.textContent = '⚡ Force Scrape Sekarang';
+}
+
+// ── COMPANIES ──
+function debounceSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    coSearch = document.getElementById('co-search').value.trim();
+    coPage   = 0;
+    loadCompanies();
+  }, 400);
+}
+
+async function loadCompanies() {
+  const list = document.getElementById('companies-list');
+  list.innerHTML = '<p class="text-slate-500 text-sm text-center py-6">Loading...</p>';
+  document.getElementById('btn-prev').disabled = coPage <= 0;
+
+  const offset = coPage * CO_LIMIT;
+  const url    = `/api/companies?limit=${CO_LIMIT}&offset=${offset}&search=${encodeURIComponent(coSearch)}`;
+  try {
+    const r = await fetch(url).then(x=>x.json());
+    const items = r.data || [];
+    coTotal = r.total || 0;
+    document.getElementById('co-count').textContent = `Total: ${coTotal} perusahaan`;
+    const totalPages = Math.ceil(coTotal / CO_LIMIT);
+    document.getElementById('co-page-info').textContent = `${coPage+1}/${totalPages||1}`;
+    document.getElementById('btn-next').disabled = (coPage + 1) >= totalPages;
+
+    if (!items.length) {
+      list.innerHTML = '<p class="text-slate-500 text-sm text-center py-6">Tidak ada data. Coba sync terlebih dahulu.</p>';
       return;
     }
-    list.innerHTML = '<div class="mobile-list">' + users.map(u => `
-      <div class="mobile-list-item">
-        <div>
-          <div class="text-white text-sm font-medium">${u.name || '—'}</div>
-          <div class="text-slate-400 text-xs mt-0.5">${u.phone_number || '—'}</div>
-        </div>
-        <span class="badge ${u.status === 'VIP' ? 'badge-vip' : 'badge-free'}">${u.status || 'Free'}</span>
-      </div>
-    `).join('') + '</div>';
-  }
-
-  async function upgradeUser() {
-    const phone = document.getElementById('upgrade-phone').value.trim();
-    if (!phone) return showToast('Masukkan nomor HP', true);
-    try {
-      const r = await api('POST', '/api/admin/upgrade-user', { phone_number: phone });
-      showToast('✅ ' + r.message);
-      document.getElementById('upgrade-phone').value = '';
-      loadUsers();
-    } catch(e) { showToast('❌ Gagal: ' + e.message, true); }
-  }
-
-  // ── STOCKS ──
-  async function loadStocks() {
-    const r = await api('GET', '/api/stocks');
-    const list = document.getElementById('stocks-list');
-    const stocks = (r.data || []).slice(0, 30);
-    if (!stocks.length) {
-      list.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">Belum ada data saham. Jalankan Force Scrape.</p>';
-      return;
-    }
-    list.innerHTML = '<div class="mobile-list">' + stocks.map(s => `
-      <div class="mobile-list-item">
-        <div>
-          <div class="text-white text-sm font-bold">${s.ticker}</div>
-          <div class="text-slate-400 text-xs mt-0.5">Vol: ${Number(s.volume||0).toLocaleString('id-ID')}</div>
-        </div>
+    list.innerHTML = '<div class="mobile-list">' + items.map(c => `
+      <div class="list-item">
         <div class="flex items-center gap-3">
-          <div class="text-right">
-            <div class="text-green-400 text-sm font-semibold">Rp ${Number(s.price||0).toLocaleString('id-ID')}</div>
+          ${c.logo ? `<img src="${c.logo}" class="w-7 h-7 rounded-full object-cover" onerror="this.style.display='none'" />` : '<div class="w-7 h-7 rounded-full bg-purple-900 flex items-center justify-center text-xs text-purple-300">${c.symbol[0]}</div>'}
+          <div>
+            <div class="text-white text-sm font-semibold">${c.symbol}</div>
+            <div class="text-slate-400 text-xs">${c.name || '—'}</div>
           </div>
-          <button class="del-btn" onclick="deleteStock('${s.ticker}')">✕</button>
         </div>
+        ${c.sector ? `<span class="badge badge-free">${c.sector}</span>` : ''}
       </div>
     `).join('') + '</div>';
+  } catch(e) {
+    list.innerHTML = '<p class="text-red-400 text-xs text-center py-6">Error: ' + e.message + '</p>';
   }
+}
 
-  async function upsertStock() {
-    const ticker = document.getElementById('s-ticker').value.trim().toUpperCase();
-    const price  = parseFloat(document.getElementById('s-price').value);
-    const volume = parseFloat(document.getElementById('s-volume').value);
-    if (!ticker || !price) return showToast('Isi ticker dan harga dulu', true);
-    try {
-      const r = await api('POST', '/api/admin/stocks', { ticker, price, volume: volume||0 });
-      showToast('✅ ' + r.message);
-      loadStocks();
-    } catch(e) { showToast('❌ Gagal', true); }
-  }
+// ── USERS ──
+async function loadUsers() {
+  const r   = await api('GET','/api/admin/users');
+  const list= document.getElementById('users-list');
+  const us  = r.data || [];
+  if (!us.length) { list.innerHTML='<p class="text-slate-500 text-sm text-center py-6">Belum ada user.</p>'; return; }
+  list.innerHTML = '<div class="mobile-list p-0">' + us.map(u=>`
+    <div class="list-item">
+      <div><div class="text-white text-sm font-medium">${u.name||'—'}</div>
+      <div class="text-slate-400 text-xs">${u.phone_number||'—'}</div></div>
+      <span class="badge ${u.status==='VIP'?'badge-vip':'badge-free'}">${u.status||'Free'}</span>
+    </div>`).join('') + '</div>';
+}
+async function upgradeUser() {
+  const ph = document.getElementById('upgrade-phone').value.trim();
+  if (!ph) return showToast('Masukkan nomor HP',true);
+  try {
+    const r = await api('POST','/api/admin/upgrade-user',{phone_number:ph});
+    showToast('✅ '+r.message);
+    document.getElementById('upgrade-phone').value='';
+    loadUsers();
+  } catch(e) { showToast('❌ Gagal',true); }
+}
 
-  async function deleteStock(ticker) {
-    if (!confirm(`Hapus ${ticker}?`)) return;
-    try {
-      await api('DELETE', `/api/admin/stocks/${ticker}`);
-      showToast(`✅ ${ticker} dihapus`);
-      loadStocks();
-    } catch(e) { showToast('❌ Gagal hapus', true); }
-  }
+// ── STOCKS ──
+async function loadStocks() {
+  const r   = await api('GET','/api/stocks');
+  const list= document.getElementById('stocks-list');
+  const st  = (r.data||[]).slice(0,30);
+  if (!st.length) { list.innerHTML='<p class="text-slate-500 text-sm text-center py-6">Jalankan Force Scrape dulu.</p>'; return; }
+  list.innerHTML = '<div class="mobile-list">' + st.map(s=>`
+    <div class="list-item">
+      <div><div class="text-white text-sm font-bold">${s.ticker}</div>
+      <div class="text-slate-400 text-xs">Vol: ${Number(s.volume||0).toLocaleString('id-ID')}</div></div>
+      <div class="flex items-center gap-2">
+        <div class="text-green-400 text-sm font-semibold">Rp ${Number(s.price||0).toLocaleString('id-ID')}</div>
+        <button class="danger-btn" onclick="deleteStock('${s.ticker}')">✕</button>
+      </div>
+    </div>`).join('') + '</div>';
+}
+async function upsertStock() {
+  const t=document.getElementById('s-ticker').value.trim().toUpperCase();
+  const p=parseFloat(document.getElementById('s-price').value);
+  const v=parseFloat(document.getElementById('s-volume').value)||0;
+  if (!t||!p) return showToast('Isi ticker & harga',true);
+  try { const r=await api('POST','/api/admin/stocks',{ticker:t,price:p,volume:v}); showToast('✅ '+r.message); loadStocks(); }
+  catch(e) { showToast('❌ Gagal',true); }
+}
+async function deleteStock(ticker) {
+  if (!confirm(`Hapus ${ticker}?`)) return;
+  try { await api('DELETE',`/api/admin/stocks/${ticker}`); showToast(`✅ ${ticker} dihapus`); loadStocks(); }
+  catch(e) { showToast('❌ Gagal hapus',true); }
+}
 
-  // ── ALERTS ──
-  async function loadAlerts() {
-    const r = await api('GET', '/api/alerts');
-    const list = document.getElementById('alerts-list');
-    const alerts = r.data || [];
-    if (!alerts.length) {
-      list.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">Belum ada alert.</p>';
-      return;
-    }
-    list.innerHTML = '<div class="mobile-list">' + alerts.map(a => {
-      const dt = new Date((a.timestamp||'') + 'Z');
-      return `
-        <div class="mobile-list-item">
-          <div>
-            <div class="text-white text-sm font-bold">${a.ticker} <span class="text-slate-400 text-xs font-normal">Rp ${Number(a.price||0).toLocaleString('id-ID')}</span></div>
-            <div class="text-slate-400 text-xs mt-0.5">${a.indicator_triggered || '—'}</div>
-          </div>
-          <div class="text-slate-500 text-xs">${dt.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</div>
+// ── ALERTS ──
+async function loadAlerts() {
+  const r   = await api('GET','/api/alerts');
+  const list= document.getElementById('alerts-list');
+  const al  = r.data||[];
+  if (!al.length) { list.innerHTML='<p class="text-slate-500 text-sm text-center py-6">Belum ada alert.</p>'; return; }
+  list.innerHTML = '<div class="mobile-list">' + al.map(a=>{
+    const dt=new Date((a.timestamp||'')+(a.timestamp?.endsWith('Z')?'':'Z'));
+    return `<div class="list-item">
+      <div><div class="text-white text-sm font-bold">${a.ticker} <span class="text-slate-400 text-xs">Rp ${Number(a.price||0).toLocaleString('id-ID')}</span></div>
+      <div class="text-slate-400 text-xs">${a.indicator_triggered||'—'}</div></div>
+      <div class="text-slate-500 text-xs">${dt.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</div>
+    </div>`;
+  }).join('') + '</div>';
+}
+async function createAlert() {
+  const t=document.getElementById('a-ticker').value.trim().toUpperCase();
+  const p=parseFloat(document.getElementById('a-price').value);
+  const i=document.getElementById('a-indicator').value.trim();
+  const c=document.getElementById('a-chatid').value.trim();
+  if (!t||!p||!i) return showToast('Isi semua field wajib',true);
+  try {
+    const r=await api('POST','/api/admin/alerts',{ticker:t,price:p,indicator_triggered:i,telegram_chat_id:c||null});
+    showToast('✅ Alert dikirim! Telegram: '+(r.telegram_sent?'✓':'✗'));
+    loadAlerts();
+  } catch(e) { showToast('❌ Gagal kirim alert',true); }
+}
+
+// ── LOGS ──
+async function loadLogs() {
+  const list = document.getElementById('logs-list');
+  try {
+    const r  = await api('GET', '/api/admin/logs?limit=20');
+    const logs = r.data || [];
+    if (!logs.length) { list.innerHTML='<p class="text-slate-500 text-sm text-center py-6 px-4">Belum ada log.</p>'; return; }
+    list.innerHTML = logs.map(l => {
+      const dt  = new Date((l.created_at||'')+(l.created_at?.endsWith('Z')?'':'Z'));
+      const cls = l.status==='SUCCESS' ? 'badge-ok' : 'badge-err';
+      return `<div class="log-item">
+        <div class="flex items-center justify-between mb-0.5">
+          <span class="text-white text-xs font-medium">${l.service_name||'—'}</span>
+          <span class="badge ${cls}" style="font-size:.62rem;padding:1px 7px;">${l.status}</span>
         </div>
-      `;
-    }).join('') + '</div>';
+        <div class="text-slate-400 text-xs">${l.message||'—'}</div>
+        <div class="text-slate-600 text-xs mt-1">${dt.toLocaleString('id-ID')}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML='<p class="text-red-400 text-xs text-center py-4 px-4">Error load logs</p>';
   }
-
-  async function createAlert() {
-    const ticker    = document.getElementById('a-ticker').value.trim().toUpperCase();
-    const price     = parseFloat(document.getElementById('a-price').value);
-    const indicator = document.getElementById('a-indicator').value.trim();
-    const chatid    = document.getElementById('a-chatid').value.trim();
-    if (!ticker || !price || !indicator) return showToast('Isi semua field wajib', true);
-    try {
-      const r = await api('POST', '/api/admin/alerts', {
-        ticker, price, indicator_triggered: indicator,
-        telegram_chat_id: chatid || null
-      });
-      showToast('✅ Alert dikirim! Telegram: ' + (r.telegram_sent ? '✓' : '✗'));
-      loadAlerts();
-    } catch(e) { showToast('❌ Gagal kirim alert', true); }
-  }
-
-  // ── CONTENT (placeholder) ──
-  function saveFaq() {
-    const q = document.getElementById('faq-q').value.trim();
-    const a = document.getElementById('faq-a').value.trim();
-    if (!q || !a) return showToast('Isi pertanyaan & jawaban', true);
-    showToast('✅ FAQ disimpan (fitur soon)');
-  }
-
-  function saveAnnouncement() {
-    const t = document.getElementById('ann-title').value.trim();
-    const b = document.getElementById('ann-body').value.trim();
-    if (!t || !b) return showToast('Isi judul & isi pengumuman', true);
-    showToast('✅ Pengumuman dipublish (fitur soon)');
-  }
+}
 </script>
 </body>
 </html>
