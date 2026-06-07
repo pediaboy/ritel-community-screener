@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+supabase
+requests
+beautifulsoup4
+pandas
+pandas-ta
+python-dotenv
+httpx
