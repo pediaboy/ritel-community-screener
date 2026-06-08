@@ -3,251 +3,271 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Paket VIP — Ritel Community Screener</title>
+<title>Paket VIP — RITELCOMMUNITY.ID SCREENER</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <script src="https://cdn.tailwindcss.com"></script>
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          galaxy: { 900:'#0a0a0f', 800:'#10101a', 700:'#1a1a2e' },
-          neon: { green:'#00ff88', blue:'#00d4ff', purple:'#8b5cf6', yellow:'#ffd700' }
-        }
-      }
-    }
-  }
-</script>
 <style>
-  body { background: #0a0a0f; font-family: 'Segoe UI', sans-serif; }
-  .card { background: #10101a; border: 1px solid #1a1a2e; border-radius: 16px; }
-  .invoice-card { background: #10101a; border: 1px solid #2a2a3e; border-radius: 16px; font-family: 'Courier New', monospace; }
-  .popular-badge { background: linear-gradient(135deg,#8b5cf6,#6d28d9); }
-  .check { color: #00ff88; }
-  .glow { box-shadow: 0 0 30px #8b5cf644; }
-  .pulse { animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
-  .modal-overlay { position:fixed;inset:0;background:#000000cc;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px; }
-  .modal-overlay.hidden { display:none; }
-  .wa-btn { background: #25d366; color: white; }
-  .wa-btn:hover { background: #128c7e; }
-  ::-webkit-scrollbar { width:4px; }
-  ::-webkit-scrollbar-track { background:#10101a; }
-  ::-webkit-scrollbar-thumb { background:#0f3460; border-radius:2px; }
+*{box-sizing:border-box}
+body{background:#0a0a0f;font-family:'Segoe UI',system-ui,sans-serif;overflow-x:hidden;margin:0}
+#galaxy-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.layer{position:relative;z-index:1}
+.card{background:rgba(16,16,26,.88);border:1px solid #1a1a2e;border-radius:14px;backdrop-filter:blur(4px)}
+.check-icon{color:#00ff88;width:16px;flex-shrink:0}
+.cross-icon{color:#374151;width:16px;flex-shrink:0}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.hidden{display:none}
+.input-dark{background:#1a1a2e;border:1px solid #0f3460;color:white;padding:10px 14px;border-radius:8px;font-size:13px;width:100%;outline:none}
+.input-dark:focus{border-color:#00d4ff}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:#10101a}
+::-webkit-scrollbar-thumb{background:#0f3460;border-radius:4px}
+.pulse{animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 </style>
 </head>
 <body class="min-h-screen text-gray-100">
 
+<canvas id="galaxy-canvas"></canvas>
+<script>
+(function(){var c=document.getElementById('galaxy-canvas'),ctx=c.getContext('2d');var W,H,stars=[];function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight}resize();window.addEventListener('resize',resize);for(var i=0;i<200;i++){stars.push({x:Math.random()*1e4,y:Math.random()*1e4,r:Math.random()*1.4+.3,s:Math.random()*.4+.05,a:Math.random()*Math.PI*2})}function draw(){ctx.clearRect(0,0,W,H);var t=Date.now()*.001;stars.forEach(function(st){var x=(st.x+t*st.s*30)%W,y=(st.y+t*st.s*10)%H;var op=.4+Math.sin(t*st.s*3+st.a)*.3;ctx.beginPath();ctx.arc(x,y,st.r,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,'+op+')';ctx.fill()});requestAnimationFrame(draw)}draw()})();
+</script>
+
 <!-- HEADER -->
-<header class="sticky top-0 z-40" style="background:#10101a;border-bottom:1px solid #1a1a2e">
+<header class="layer sticky top-0 z-50" style="background:rgba(10,10,15,.92);border-bottom:1px solid #1a1a2e;backdrop-filter:blur(12px)">
   <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
     <div class="flex items-center gap-3">
-      <a href="/" class="text-gray-500 hover:text-white text-sm">← Kembali</a>
-      <span class="text-gray-600">|</span>
-      <span class="font-bold text-white">💎 Paket VIP</span>
+      <a href="/" style="color:#6b7280;font-size:13px;text-decoration:none;display:flex;align-items:center;gap:6px">
+        <i class="fa-solid fa-arrow-left"></i> Kembali
+      </a>
+      <span style="color:#374151">|</span>
+      <span style="font-weight:700;color:#fff;font-size:14px">
+        <i class="fa-solid fa-crown mr-1" style="color:#ffd700"></i> Paket VIP
+      </span>
     </div>
-    <span class="text-xs text-gray-500">RITEL COMMUNITY.ID</span>
+    <span style="font-size:11px;color:#4b5563">RITELCOMMUNITY.ID SCREENER</span>
   </div>
 </header>
 
-<main class="max-w-6xl mx-auto px-4 py-10">
-
+<main class="layer max-w-6xl mx-auto px-4 py-10">
   <!-- HERO -->
-  <div class="text-center mb-12">
-    <div class="text-5xl mb-4">👑</div>
-    <h1 class="text-3xl md:text-4xl font-bold text-white mb-3">
+  <div style="text-align:center;margin-bottom:48px">
+    <div style="width:56px;height:56px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+      <i class="fa-solid fa-crown" style="color:#ffd700;font-size:22px"></i>
+    </div>
+    <h1 style="font-size:32px;font-weight:800;color:#fff;margin:0 0 10px">
       Pilih Paket <span style="background:linear-gradient(135deg,#ffd700,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent">VIP</span> Mu
     </h1>
-    <p class="text-gray-400 text-lg">Screener IDX real-time + alert Telegram langsung ke HP</p>
-    <div class="flex justify-center gap-3 mt-4 flex-wrap">
-      <span class="text-xs px-3 py-1.5 rounded-full" style="background:#00ff8815;color:#00ff88;border:1px solid #00ff8830">✅ Data GoAPI Real-time</span>
-      <span class="text-xs px-3 py-1.5 rounded-full" style="background:#8b5cf615;color:#8b5cf6;border:1px solid #8b5cf630">✅ Alert Telegram Instant</span>
-      <span class="text-xs px-3 py-1.5 rounded-full" style="background:#ffd70015;color:#ffd700;border:1px solid #ffd70030">✅ 973 Saham IDX</span>
+    <p style="color:#9ca3af;font-size:15px;margin:0 0 20px">Screener IDX real-time + alert Telegram langsung ke HP, gak pake delay</p>
+    <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap">
+      <span style="background:rgba(0,255,136,.08);color:#00ff88;border:1px solid rgba(0,255,136,.2);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600">
+        <i class="fa-solid fa-circle-check mr-1"></i> Data Feed Real-time
+      </span>
+      <span style="background:rgba(139,92,246,.08);color:#8b5cf6;border:1px solid rgba(139,92,246,.2);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600">
+        <i class="fa-solid fa-circle-check mr-1"></i> Alert Telegram Instant
+      </span>
+      <span style="background:rgba(255,215,0,.08);color:#ffd700;border:1px solid rgba(255,215,0,.2);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600">
+        <i class="fa-solid fa-circle-check mr-1"></i> 973+ Saham IDX
+      </span>
     </div>
   </div>
 
   <!-- PRICING CARDS -->
-  <div class="grid md:grid-cols-3 gap-6 mb-12">
-
+  <div class="grid md:grid-cols-3 gap-6 mb-10">
     <!-- FREE -->
     <div class="card p-6">
-      <div class="text-center mb-6">
-        <div class="text-2xl mb-2">📊</div>
-        <h2 class="text-xl font-bold text-white">Free</h2>
-        <div class="text-gray-400 text-sm mt-1">Untuk pemula</div>
-        <div class="text-3xl font-bold text-white mt-4">Rp 0</div>
-        <div class="text-gray-500 text-sm">Selamanya</div>
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="width:40px;height:40px;background:#1a1a2e;border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+          <i class="fa-solid fa-chart-bar" style="color:#6b7280;font-size:16px"></i>
+        </div>
+        <div style="font-size:20px;font-weight:700;color:#fff">Free</div>
+        <div style="font-size:12px;color:#6b7280;margin-top:4px">Untuk pemula</div>
+        <div style="font-size:32px;font-weight:800;color:#fff;margin-top:12px">Rp 0</div>
+        <div style="font-size:12px;color:#6b7280">Selamanya</div>
       </div>
-      <ul class="space-y-3 mb-6">
-        <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-300">Lihat top 50 saham IDX</span></li>
-        <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-300">Update setiap jam</span></li>
-        <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-300">Screener dasar (volume & change)</span></li>
-        <li class="flex items-center gap-2 text-sm text-gray-600"><span>✗</span><span>Alert Telegram</span></li>
-        <li class="flex items-center gap-2 text-sm text-gray-600"><span>✗</span><span>Indikator MA20 / MACD</span></li>
-        <li class="flex items-center gap-2 text-sm text-gray-600"><span>✗</span><span>973 saham full IDX</span></li>
+      <ul style="list-style:none;padding:0;margin:0 0 20px;display:flex;flex-direction:column;gap:10px">
+        <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><i class="fa-solid fa-check check-icon"></i> Top 50 saham IDX</li>
+        <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><i class="fa-solid fa-check check-icon"></i> Update setiap jam</li>
+        <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db"><i class="fa-solid fa-check check-icon"></i> Screener dasar volume & change</li>
+        <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151"><i class="fa-solid fa-xmark cross-icon"></i> Alert Telegram</li>
+        <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151"><i class="fa-solid fa-xmark cross-icon"></i> Indikator MA20 / MACD</li>
+        <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:#374151"><i class="fa-solid fa-xmark cross-icon"></i> Full 973 saham IDX</li>
       </ul>
-      <a href="/" class="block w-full text-center py-3 rounded-xl font-semibold text-sm"
-        style="background:#1a1a2e;color:#6b7280;border:1px solid #2a2a3e">
+      <a href="/" style="display:block;text-align:center;padding:11px;border-radius:10px;background:#1a1a2e;color:#6b7280;border:1px solid #2a2a3e;font-weight:600;font-size:13px;text-decoration:none">
         Mulai Gratis
       </a>
     </div>
 
     <!-- VIP BULANAN (POPULAR) -->
-    <div class="relative p-1 rounded-2xl glow" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9,#4f46e5)">
-      <div class="card h-full p-6 rounded-xl" style="background:#13102a">
-        <div class="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span class="popular-badge text-white text-xs font-bold px-4 py-1 rounded-full">🔥 POPULER</span>
+    <div style="position:relative;padding:1px;border-radius:16px;background:linear-gradient(135deg,#8b5cf6,#6d28d9,#4f46e5);box-shadow:0 0 40px rgba(139,92,246,.3)">
+      <div style="background:#13102a;border-radius:15px;padding:24px;height:100%">
+        <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;font-size:11px;font-weight:700;padding:4px 16px;border-radius:20px;white-space:nowrap">
+          <i class="fa-solid fa-fire mr-1"></i> PALING POPULER
         </div>
-        <div class="text-center mb-6">
-          <div class="text-2xl mb-2">⚡</div>
-          <h2 class="text-xl font-bold text-white">VIP Bulanan</h2>
-          <div class="text-purple-400 text-sm mt-1">Paling fleksibel</div>
-          <div class="mt-4">
-            <div class="text-4xl font-bold text-white">Rp 99.000</div>
-            <div class="text-gray-400 text-sm">per bulan</div>
+        <div style="text-align:center;margin-bottom:24px">
+          <div style="width:40px;height:40px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+            <i class="fa-solid fa-bolt" style="color:#ffd700;font-size:16px"></i>
+          </div>
+          <div style="font-size:20px;font-weight:700;color:#fff">VIP Bulanan</div>
+          <div style="font-size:12px;color:#a78bfa;margin-top:4px">Paling fleksibel</div>
+          <div style="margin-top:12px">
+            <span id="price-bulanan" style="font-size:36px;font-weight:800;color:#fff">Rp 99.000</span>
+            <div style="font-size:12px;color:#9ca3af">per bulan</div>
           </div>
         </div>
-        <ul class="space-y-3 mb-6">
-          <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200">Semua fitur Free</span></li>
-          <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200 font-semibold">973 saham IDX full</span></li>
-          <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200">Alert Telegram real-time</span></li>
-          <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200">Indikator MA20 + MACD</span></li>
-          <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200">Update tiap 30 menit</span></li>
-          <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200">Screener custom volume & %</span></li>
+        <ul style="list-style:none;padding:0;margin:0 0 20px;display:flex;flex-direction:column;gap:10px">
+          <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:#e5e7eb"><i class="fa-solid fa-check check-icon"></i> Semua fitur Free</li>
+          <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:#e5e7eb"><i class="fa-solid fa-check check-icon"></i> <strong>973 saham IDX full</strong></li>
+          <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:#e5e7eb"><i class="fa-solid fa-check check-icon"></i> Alert Telegram real-time</li>
+          <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:#e5e7eb"><i class="fa-solid fa-check check-icon"></i> Indikator MA20 + MACD</li>
+          <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:#e5e7eb"><i class="fa-solid fa-check check-icon"></i> Update tiap 30 menit</li>
+          <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:#e5e7eb"><i class="fa-solid fa-check check-icon"></i> Screener custom filter</li>
         </ul>
-        <button onclick="openInvoice('bulanan', 99000)"
-          class="block w-full text-center py-3 rounded-xl font-bold text-sm text-white"
-          style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">
-          Beli Sekarang →
+        <button onclick="openInvoice('bulanan')"
+          style="display:block;width:100%;padding:12px;border-radius:10px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white;font-weight:700;font-size:13px;border:none;cursor:pointer">
+          Beli Sekarang
         </button>
       </div>
     </div>
 
     <!-- VIP TAHUNAN -->
-    <div class="card p-6" style="border-color:#ffd70040">
-      <div class="text-center mb-6">
-        <div class="text-2xl mb-2">💎</div>
-        <h2 class="text-xl font-bold text-white">VIP Tahunan</h2>
-        <div class="text-yellow-400 text-sm mt-1">Hemat 33%</div>
-        <div class="mt-4">
-          <div class="text-4xl font-bold" style="color:#ffd700">Rp 799.000</div>
-          <div class="text-gray-400 text-sm">per tahun <span class="line-through text-gray-600">Rp 1.188.000</span></div>
+    <div class="card p-6" style="border-color:rgba(255,215,0,.25)">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="width:40px;height:40px;background:linear-gradient(135deg,#78350f,#92400e);border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+          <i class="fa-solid fa-gem" style="color:#ffd700;font-size:16px"></i>
+        </div>
+        <div style="font-size:20px;font-weight:700;color:#fff">VIP Tahunan</div>
+        <div style="font-size:12px;color:#fbbf24;margin-top:4px">Hemat 33%</div>
+        <div style="margin-top:12px">
+          <span id="price-tahunan" style="font-size:36px;font-weight:800;color:#ffd700">Rp 799.000</span>
+          <div style="font-size:12px;color:#9ca3af">per tahun <del style="color:#4b5563" id="price-bulanan-del">Rp 1.188.000</del></div>
         </div>
       </div>
-      <ul class="space-y-3 mb-6">
-        <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200">Semua fitur VIP Bulanan</span></li>
-        <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200 font-semibold">Hemat Rp 389.000/tahun</span></li>
-        <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200">Prioritas support</span></li>
-        <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200">Early access fitur baru</span></li>
-        <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200">Custom screener filter</span></li>
-        <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200">Laporan mingguan PDF</span></li>
+      <ul style="list-style:none;padding:0;margin:0 0 20px;display:flex;flex-direction:column;gap:10px">
+        <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:#e5e7eb"><i class="fa-solid fa-check check-icon"></i> Semua fitur VIP Bulanan</li>
+        <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:#e5e7eb"><i class="fa-solid fa-check check-icon"></i> <strong>Hemat Rp 389.000/tahun</strong></li>
+        <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:#e5e7eb"><i class="fa-solid fa-check check-icon"></i> Prioritas support</li>
+        <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:#e5e7eb"><i class="fa-solid fa-check check-icon"></i> Early access fitur baru</li>
+        <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:#e5e7eb"><i class="fa-solid fa-check check-icon"></i> Custom screener filter</li>
+        <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:#e5e7eb"><i class="fa-solid fa-check check-icon"></i> Laporan mingguan PDF</li>
       </ul>
-      <button onclick="openInvoice('tahunan', 799000)"
-        class="block w-full text-center py-3 rounded-xl font-bold text-sm"
-        style="background:linear-gradient(135deg,#78350f,#92400e);color:#ffd700;border:1px solid #ffd70040">
-        Beli Tahunan → Hemat 33%
+      <button onclick="openInvoice('tahunan')"
+        style="display:block;width:100%;padding:12px;border-radius:10px;background:linear-gradient(135deg,#78350f,#92400e);color:#ffd700;font-weight:700;font-size:13px;border:1px solid rgba(255,215,0,.3);cursor:pointer">
+        Beli Tahunan — Hemat 33%
       </button>
     </div>
   </div>
 
   <!-- FAQ -->
-  <div class="card p-6 mb-6">
-    <h3 class="font-bold text-white text-lg mb-4">❓ FAQ</h3>
-    <div class="grid md:grid-cols-2 gap-4">
+  <div class="card p-6">
+    <h3 style="font-weight:700;color:#fff;font-size:16px;margin:0 0 16px">
+      <i class="fa-solid fa-circle-question mr-2" style="color:#8b5cf6"></i> FAQ
+    </h3>
+    <div class="grid md:grid-cols-2 gap-6">
       <div>
-        <div class="font-semibold text-white text-sm mb-1">Bagaimana cara bayar?</div>
-        <div class="text-gray-400 text-sm">Transfer bank (BCA/Mandiri/BRI) atau QRIS. Konfirmasi via WhatsApp setelah transfer.</div>
+        <div style="font-weight:600;color:#fff;font-size:13px;margin-bottom:6px">Bagaimana cara bayar?</div>
+        <div style="color:#9ca3af;font-size:13px;line-height:1.6">Transfer bank atau QRIS. Konfirmasi via WhatsApp setelah transfer, akses VIP langsung diaktifkan.</div>
       </div>
       <div>
-        <div class="font-semibold text-white text-sm mb-1">Kapan akses VIP aktif?</div>
-        <div class="text-gray-400 text-sm">Maks 1x24 jam setelah konfirmasi pembayaran. Biasanya langsung aktif.</div>
+        <div style="font-weight:600;color:#fff;font-size:13px;margin-bottom:6px">Kapan akses VIP aktif?</div>
+        <div style="color:#9ca3af;font-size:13px;line-height:1.6">Maks 1x24 jam setelah konfirmasi pembayaran. Biasanya langsung aktif dalam hitungan menit.</div>
       </div>
       <div>
-        <div class="font-semibold text-white text-sm mb-1">Alert dikirim ke mana?</div>
-        <div class="text-gray-400 text-sm">Langsung ke Telegram kamu. Notifikasi real-time setiap ada saham yang memenuhi kriteria screener.</div>
+        <div style="font-weight:600;color:#fff;font-size:13px;margin-bottom:6px">Alert dikirim ke mana?</div>
+        <div style="color:#9ca3af;font-size:13px;line-height:1.6">Langsung ke Telegram kamu. Notifikasi real-time setiap ada saham yang memenuhi kriteria screener.</div>
       </div>
       <div>
-        <div class="font-semibold text-white text-sm mb-1">Bisa cancel kapan saja?</div>
-        <div class="text-gray-400 text-sm">Ya, cancel kapan saja. Akses tetap aktif hingga akhir periode berlangganan.</div>
+        <div style="font-weight:600;color:#fff;font-size:13px;margin-bottom:6px">Ada refund kalau gak cocok?</div>
+        <div style="color:#9ca3af;font-size:13px;line-height:1.6">Layanan VIP yang sudah aktif tidak dapat di-refund sesuai syarat & ketentuan layanan.</div>
       </div>
     </div>
   </div>
-
 </main>
+
+<!-- FOOTER -->
+<footer class="layer" style="margin-top:40px;padding:20px 16px;border-top:1px solid #1a1a2e">
+  <div class="max-w-6xl mx-auto" style="display:flex;flex-direction:column;align-items:center;gap:6px">
+    <div style="color:#374151;font-size:11px;display:flex;align-items:center;gap:6px">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width:12px;height:12px"><path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25z" clip-rule="evenodd"/></svg>
+      2026 RITELCOMMUNITY.ID SCREENER
+    </div>
+    <div style="color:#4b5563;font-size:11px">Development by <strong style="color:#6b7280">THIRAFI THARIQ AL IDRIS</strong></div>
+  </div>
+</footer>
+
+<!-- BOTTOM NAV MOBILE -->
+<nav style="position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,.95);border-top:1px solid #1a1a2e;backdrop-filter:blur(12px);z-index:50" class="md:hidden">
+  <div style="display:flex">
+    <a href="/" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0;color:#6b7280;font-size:10px;gap:4px;text-decoration:none"><i class="fa-solid fa-chart-line"></i> Screener</a>
+    <a href="/pricing" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0;color:#8b5cf6;font-size:10px;gap:4px;text-decoration:none"><i class="fa-solid fa-crown"></i> VIP</a>
+    <a href="/admin" style="flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 0;color:#6b7280;font-size:10px;gap:4px;text-decoration:none"><i class="fa-solid fa-gear"></i> Admin</a>
+  </div>
+</nav>
+<div style="height:56px" class="md:hidden"></div>
 
 <!-- INVOICE MODAL -->
 <div class="modal-overlay hidden" id="invoice-modal">
-  <div class="w-full max-w-md">
-    <!-- Invoice Card -->
-    <div class="invoice-card p-0 overflow-hidden">
-      <!-- Header Invoice -->
-      <div class="p-5" style="background:linear-gradient(135deg,#1a0a2e,#0a1a2e);border-bottom:1px solid #2a2a3e">
-        <div class="flex justify-between items-start">
+  <div style="width:100%;max-width:440px">
+    <div style="background:#10101a;border:1px solid #2a2a3e;border-radius:16px;overflow:hidden;font-family:'Courier New',monospace">
+      <!-- Invoice Header -->
+      <div style="padding:20px;background:linear-gradient(135deg,#1a0a2e,#0a1a2e);border-bottom:1px solid #2a2a3e">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
           <div>
-            <div class="text-xs text-gray-500 mb-1">INVOICE</div>
-            <div class="font-bold text-white text-lg">RITEL COMMUNITY.ID</div>
-            <div class="text-xs text-gray-400">Paket VIP Screener IDX</div>
+            <div style="font-size:10px;color:#6b7280;letter-spacing:1px;margin-bottom:4px">INVOICE</div>
+            <div style="font-weight:700;color:#fff;font-size:16px">RITELCOMMUNITY.ID</div>
+            <div style="font-size:11px;color:#9ca3af">Paket VIP Screener IDX</div>
           </div>
-          <div class="text-right">
-            <div class="text-xs text-gray-500">No. Invoice</div>
-            <div class="text-sm font-bold text-neon-blue" id="inv-number">RC-2026-0001</div>
-            <div class="text-xs text-gray-500 mt-1" id="inv-date">—</div>
+          <div style="text-align:right">
+            <div style="font-size:10px;color:#6b7280">No. Invoice</div>
+            <div style="font-size:13px;font-weight:700;color:#00d4ff" id="inv-number">RC-2026-0001</div>
+            <div style="font-size:11px;color:#6b7280;margin-top:3px" id="inv-date">—</div>
           </div>
         </div>
       </div>
-      <!-- Body Invoice -->
-      <div class="p-5">
-        <div class="mb-4">
-          <div class="text-xs text-gray-500 mb-2">DETAIL PEMBELIAN</div>
-          <div class="flex justify-between items-center py-2" style="border-bottom:1px solid #2a2a3e">
-            <span class="text-sm text-gray-300" id="inv-item">VIP Bulanan</span>
-            <span class="text-sm font-bold text-white" id="inv-price">Rp 99.000</span>
+      <!-- Invoice Body -->
+      <div style="padding:20px">
+        <!-- Detail -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:10px;color:#6b7280;letter-spacing:.5px;margin-bottom:8px">DETAIL PEMBELIAN</div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1a1a2e">
+            <span style="font-size:13px;color:#d1d5db" id="inv-item">VIP Bulanan</span>
+            <span style="font-size:13px;font-weight:700;color:#fff" id="inv-price">—</span>
           </div>
-          <div class="flex justify-between items-center py-2">
-            <span class="text-xs text-gray-500">Masa Aktif</span>
-            <span class="text-xs text-gray-300" id="inv-period">1 bulan</span>
+          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a2e">
+            <span style="font-size:11px;color:#6b7280">Masa Aktif</span>
+            <span style="font-size:11px;color:#9ca3af" id="inv-period">1 bulan</span>
           </div>
-          <div class="flex justify-between items-center py-2 mt-2 rounded-lg px-3" style="background:#1a1a2e">
-            <span class="text-sm font-bold text-white">TOTAL</span>
-            <span class="text-lg font-bold text-neon-green" id="inv-total">Rp 99.000</span>
+          <div style="display:flex;justify-content:space-between;padding:10px 12px;background:#1a1a2e;border-radius:8px;margin-top:8px">
+            <span style="font-size:13px;font-weight:700;color:#fff">TOTAL</span>
+            <span style="font-size:17px;font-weight:800;color:#00ff88" id="inv-total">—</span>
           </div>
         </div>
-        <!-- Rekening -->
-        <div class="mb-4 p-3 rounded-lg" style="background:#0a1a2e;border:1px solid #0f3460">
-          <div class="text-xs text-gray-500 mb-2">💳 TRANSFER KE REKENING</div>
-          <div class="space-y-1">
-            <div class="flex justify-between text-sm">
-              <span class="text-gray-400">BCA</span>
-              <span class="text-white font-mono font-bold cursor-pointer hover:text-neon-blue" onclick="copyText('1234567890')">1234567890</span>
-            </div>
-            <div class="flex justify-between text-sm">
-              <span class="text-gray-400">Mandiri</span>
-              <span class="text-white font-mono font-bold cursor-pointer hover:text-neon-blue" onclick="copyText('0987654321')">0987654321</span>
-            </div>
-            <div class="flex justify-between text-sm">
-              <span class="text-gray-400">Atas Nama</span>
-              <span class="text-white">RITEL COMMUNITY</span>
-            </div>
+        <!-- Rekening (dinamis) -->
+        <div style="margin-bottom:16px;padding:12px;background:#0a1a2e;border:1px solid #0f3460;border-radius:10px">
+          <div style="font-size:10px;color:#6b7280;letter-spacing:.5px;margin-bottom:8px">
+            <i class="fa-solid fa-credit-card mr-1"></i> TRANSFER KE REKENING
           </div>
-          <div class="text-xs text-gray-600 mt-2">Klik nomor rekening untuk copy</div>
+          <div id="bank-detail" style="color:#9ca3af;font-size:13px">Memuat info rekening...</div>
+          <div style="font-size:10px;color:#4b5563;margin-top:6px">Klik nomor rekening untuk copy</div>
         </div>
-        <!-- Nomor HP -->
-        <div class="mb-4">
-          <label class="text-xs text-gray-500 block mb-1">Nomor WhatsApp kamu (untuk konfirmasi)</label>
-          <input type="tel" id="inv-phone" placeholder="08xxxxxxxxxx"
-            class="w-full px-4 py-2.5 rounded-lg text-sm text-white"
-            style="background:#1a1a2e;border:1px solid #2a2a3e;font-family:inherit">
+        <!-- Input HP -->
+        <div style="margin-bottom:14px">
+          <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:5px">Nomor WhatsApp kamu</label>
+          <input type="tel" id="inv-phone" placeholder="08xxxxxxxxxx" class="input-dark">
         </div>
-        <!-- WhatsApp Button -->
+        <div style="margin-bottom:14px">
+          <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:5px">Nama lengkap kamu</label>
+          <input type="text" id="inv-name" placeholder="Nama sesuai transfer" class="input-dark">
+        </div>
+        <!-- WA Button -->
         <button onclick="sendWhatsApp()"
-          class="wa-btn w-full py-3 rounded-xl font-bold text-white text-sm flex items-center justify-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+          style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px;border-radius:10px;background:#25d366;color:white;font-weight:700;font-size:13px;border:none;cursor:pointer;margin-bottom:8px">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px">
             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
             <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.558 4.117 1.533 5.847L.057 23.784a.5.5 0 0 0 .613.613l5.938-1.476A11.951 11.951 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.955 9.955 0 0 1-5.127-1.417l-.367-.218-3.527.877.893-3.527-.238-.383A9.958 9.958 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
           </svg>
           Konfirmasi via WhatsApp
         </button>
-        <button onclick="closeInvoice()"
-          class="w-full py-2.5 rounded-xl text-sm text-gray-500 mt-2 hover:text-gray-300">
+        <button onclick="closeInvoice()" style="display:block;width:100%;padding:10px;border-radius:10px;background:none;border:none;color:#6b7280;font-size:13px;cursor:pointer">
           Tutup
         </button>
       </div>
@@ -255,81 +275,71 @@
   </div>
 </div>
 
-<!-- BOTTOM NAV -->
-<nav class="fixed bottom-0 left-0 right-0 md:hidden" style="background:#10101a;border-top:1px solid #1a1a2e">
-  <div class="flex">
-    <a href="/" class="flex-1 flex flex-col items-center py-3 text-gray-500">
-      <span class="text-lg">📊</span><span class="text-xs mt-1">Screener</span>
-    </a>
-    <a href="/pricing" class="flex-1 flex flex-col items-center py-3 text-neon-purple">
-      <span class="text-lg">👑</span><span class="text-xs mt-1">VIP</span>
-    </a>
-    <a href="/admin" class="flex-1 flex flex-col items-center py-3 text-gray-500">
-      <span class="text-lg">⚙️</span><span class="text-xs mt-1">Admin</span>
-    </a>
-  </div>
-</nav>
-<div class="md:hidden h-16"></div>
-
 <script>
-let currentPaket = 'bulanan';
-let currentPrice = 99000;
+let currentPaket='bulanan';
+let settings={vip_price:99000,bank_account:'BCA 1234567890 a/n RITEL COMMUNITY'};
 
-function openInvoice(paket, price) {
-  currentPaket = paket;
-  currentPrice = price;
-  const now = new Date();
-  const invNum = 'RC-' + now.getFullYear() + '-' + String(Math.floor(Math.random()*9000)+1000);
-  const dateStr = now.toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
-  
-  document.getElementById('inv-number').textContent = invNum;
-  document.getElementById('inv-date').textContent = dateStr;
-  document.getElementById('inv-item').textContent = 'VIP ' + (paket === 'bulanan' ? 'Bulanan' : 'Tahunan');
-  document.getElementById('inv-period').textContent = paket === 'bulanan' ? '1 bulan' : '12 bulan';
-  document.getElementById('inv-price').textContent = 'Rp ' + price.toLocaleString('id-ID');
-  document.getElementById('inv-total').textContent = 'Rp ' + price.toLocaleString('id-ID');
+async function loadSettings(){
+  try{
+    const r=await fetch('/api/settings');
+    settings=await r.json();
+    const price=settings.vip_price||99000;
+    const el=document.getElementById('price-bulanan');
+    if(el)el.textContent='Rp '+Number(price).toLocaleString('id-ID');
+    const elY=document.getElementById('price-tahunan');
+    const annual=Math.round(price*10);
+    const fullAnnual=Math.round(price*12);
+    if(elY)elY.textContent='Rp '+annual.toLocaleString('id-ID');
+    const delEl=document.getElementById('price-bulanan-del');
+    if(delEl)delEl.textContent='Rp '+fullAnnual.toLocaleString('id-ID');
+  }catch(e){}
+}
+
+function openInvoice(paket){
+  currentPaket=paket;
+  const price=settings.vip_price||99000;
+  const annual=Math.round(price*10);
+  const now=new Date();
+  const invNum='RC-'+now.getFullYear()+'-'+String(Math.floor(Math.random()*9000)+1000);
+  const dateStr=now.toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
+  document.getElementById('inv-number').textContent=invNum;
+  document.getElementById('inv-date').textContent=dateStr;
+  document.getElementById('inv-item').textContent='VIP '+(paket==='bulanan'?'Bulanan':'Tahunan');
+  document.getElementById('inv-period').textContent=paket==='bulanan'?'1 bulan':'12 bulan';
+  const finalPrice=paket==='bulanan'?price:annual;
+  document.getElementById('inv-price').textContent='Rp '+Number(finalPrice).toLocaleString('id-ID');
+  document.getElementById('inv-total').textContent='Rp '+Number(finalPrice).toLocaleString('id-ID');
+  // Bank detail
+  const bank=settings.bank_account||'BCA 1234567890 a/n RITEL COMMUNITY';
+  document.getElementById('bank-detail').innerHTML=`<span onclick="copyText('${bank}')" style="cursor:pointer;font-weight:700;color:#00d4ff" title="Klik untuk copy">${bank}</span>`;
   document.getElementById('invoice-modal').classList.remove('hidden');
 }
 
-function closeInvoice() {
-  document.getElementById('invoice-modal').classList.add('hidden');
-}
+function closeInvoice(){document.getElementById('invoice-modal').classList.add('hidden')}
 
-function copyText(text) {
-  navigator.clipboard.writeText(text).then(() => {
-    // Simple feedback
-    const el = event.target;
-    const orig = el.textContent;
-    el.textContent = '✅ Tersalin!';
-    el.style.color = '#00ff88';
-    setTimeout(() => { el.textContent = orig; el.style.color = ''; }, 2000);
+function copyText(text){
+  navigator.clipboard.writeText(text).then(()=>{
+    const el=event.target;
+    const orig=el.textContent;
+    el.textContent='Tersalin!';el.style.color='#00ff88';
+    setTimeout(()=>{el.textContent=orig;el.style.color='#00d4ff'},2000);
   });
 }
 
-function sendWhatsApp() {
-  const phone = document.getElementById('inv-phone').value.trim();
-  const paketLabel = currentPaket === 'bulanan' ? 'VIP Bulanan (Rp 99.000)' : 'VIP Tahunan (Rp 799.000)';
-  const invNum = document.getElementById('inv-number').textContent;
-  
-  const msg = `Halo Ritel Community! 👋
-
-Saya ingin konfirmasi pembayaran:
-📋 Invoice: ${invNum}
-📦 Paket: ${paketLabel}
-💰 Nominal: Rp ${currentPrice.toLocaleString('id-ID')}
-📱 No. WA Saya: ${phone || '(belum diisi)'}
-
-Mohon diverifikasi dan aktifkan akses VIP saya. Terima kasih!`;
-
-  const waNumber = '6282172222494'; // +6282172222494
-  const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`;
-  window.open(waUrl, '_blank');
+function sendWhatsApp(){
+  const phone=document.getElementById('inv-phone').value.trim();
+  const name=document.getElementById('inv-name').value.trim();
+  const price=settings.vip_price||99000;
+  const annual=Math.round(price*10);
+  const finalPrice=currentPaket==='bulanan'?price:annual;
+  const invNum=document.getElementById('inv-number').textContent;
+  const bank=settings.bank_account||'-';
+  const msg=`Halo Admin Ritel Community, saya ingin mengonfirmasi pembayaran untuk nomor invoice ${invNum} sebesar Rp ${Number(finalPrice).toLocaleString('id-ID')}. Berikut bukti transfer ke rekening ${bank} atas nama: ${name||'(belum diisi)'} nomor terdaftar ${phone||'(belum diisi)'}.`;
+  window.open(`https://wa.me/6282172222494?text=${encodeURIComponent(msg)}`,'_blank');
 }
 
-// Close modal on backdrop click
-document.getElementById('invoice-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeInvoice();
-});
+document.getElementById('invoice-modal').addEventListener('click',function(e){if(e.target===this)closeInvoice()});
+loadSettings();
 </script>
 </body>
 </html>
