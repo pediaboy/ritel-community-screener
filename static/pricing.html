@@ -1,234 +1,335 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Paket & Pembayaran — Ritel Community.ID</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;600;700&display=swap');
-    body { font-family:'Inter',sans-serif; background:#050510; color:#e2e8f0; overflow-x:hidden; }
-    #starfield { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; }
-    .main-content { position:relative; z-index:1; }
-    .neon-text { color:#7c5cff; text-shadow:0 0 20px rgba(124,92,255,0.8),0 0 40px rgba(124,92,255,0.4); }
-    .neon-border { border:1px solid rgba(124,92,255,0.5); box-shadow:0 0 15px rgba(124,92,255,0.2); }
-    .neon-btn { background:linear-gradient(135deg,#7c5cff,#a78bfa); box-shadow:0 0 20px rgba(124,92,255,0.5); transition:all 0.3s; }
-    .neon-btn:hover { box-shadow:0 0 35px rgba(124,92,255,0.8); transform:translateY(-1px); }
-    .glass-card { background:rgba(255,255,255,0.03); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.08); border-radius:16px; }
-    .nav-link { color:#94a3b8; transition:color 0.2s; }
-    .nav-link:hover { color:#7c5cff; }
-    .popular-badge { background:linear-gradient(135deg,#7c5cff,#a78bfa); }
-    @keyframes countdown-pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
-    .countdown-digit { animation:countdown-pulse 1s ease-in-out infinite; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paket VIP — Ritel Community Screener</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          galaxy: { 900:'#0a0a0f', 800:'#10101a', 700:'#1a1a2e' },
+          neon: { green:'#00ff88', blue:'#00d4ff', purple:'#8b5cf6', yellow:'#ffd700' }
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { background: #0a0a0f; font-family: 'Segoe UI', sans-serif; }
+  .card { background: #10101a; border: 1px solid #1a1a2e; border-radius: 16px; }
+  .invoice-card { background: #10101a; border: 1px solid #2a2a3e; border-radius: 16px; font-family: 'Courier New', monospace; }
+  .popular-badge { background: linear-gradient(135deg,#8b5cf6,#6d28d9); }
+  .check { color: #00ff88; }
+  .glow { box-shadow: 0 0 30px #8b5cf644; }
+  .pulse { animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+  .modal-overlay { position:fixed;inset:0;background:#000000cc;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px; }
+  .modal-overlay.hidden { display:none; }
+  .wa-btn { background: #25d366; color: white; }
+  .wa-btn:hover { background: #128c7e; }
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-track { background:#10101a; }
+  ::-webkit-scrollbar-thumb { background:#0f3460; border-radius:2px; }
+</style>
 </head>
-<body>
-<canvas id="starfield"></canvas>
-<div class="main-content">
-  <!-- NAV -->
-  <nav class="flex items-center justify-between px-6 py-4 border-b border-white/5 backdrop-blur-md bg-black/30 sticky top-0 z-50">
-    <a href="/" class="flex items-center gap-3">
-      <div class="w-8 h-8 rounded-lg neon-btn flex items-center justify-center text-white font-bold text-sm">RC</div>
-      <span class="font-bold text-white text-lg tracking-tight">RITEL COMMUNITY<span class="neon-text">.ID</span></span>
-    </a>
-    <div class="flex items-center gap-6 text-sm">
-      <a href="/" class="nav-link">Dashboard</a>
-      <a href="https://ritelcommunity.web.id" target="_blank" rel="noopener" class="nav-link">Analisa Komunitas ↗</a>
-      <a href="/pricing" class="text-white font-medium">Paket</a>
+<body class="min-h-screen text-gray-100">
+
+<!-- HEADER -->
+<header class="sticky top-0 z-40" style="background:#10101a;border-bottom:1px solid #1a1a2e">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a href="/" class="text-gray-500 hover:text-white text-sm">← Kembali</a>
+      <span class="text-gray-600">|</span>
+      <span class="font-bold text-white">💎 Paket VIP</span>
     </div>
-  </nav>
+    <span class="text-xs text-gray-500">RITEL COMMUNITY.ID</span>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-4 py-10">
 
   <!-- HERO -->
-  <section class="text-center py-14 px-4">
-    <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-3" style="font-family:'Space Grotesk',sans-serif">
-      Pilih <span class="neon-text">Paket</span> Kamu
+  <div class="text-center mb-12">
+    <div class="text-5xl mb-4">👑</div>
+    <h1 class="text-3xl md:text-4xl font-bold text-white mb-3">
+      Pilih Paket <span style="background:linear-gradient(135deg,#ffd700,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent">VIP</span> Mu
     </h1>
-    <p class="text-slate-400 text-base max-w-md mx-auto">Mulai gratis, upgrade kapan saja. Tidak ada kontrak jangka panjang.</p>
-  </section>
+    <p class="text-gray-400 text-lg">Screener IDX real-time + alert Telegram langsung ke HP</p>
+    <div class="flex justify-center gap-3 mt-4 flex-wrap">
+      <span class="text-xs px-3 py-1.5 rounded-full" style="background:#00ff8815;color:#00ff88;border:1px solid #00ff8830">✅ Data GoAPI Real-time</span>
+      <span class="text-xs px-3 py-1.5 rounded-full" style="background:#8b5cf615;color:#8b5cf6;border:1px solid #8b5cf630">✅ Alert Telegram Instant</span>
+      <span class="text-xs px-3 py-1.5 rounded-full" style="background:#ffd70015;color:#ffd700;border:1px solid #ffd70030">✅ 973 Saham IDX</span>
+    </div>
+  </div>
 
   <!-- PRICING CARDS -->
-  <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto px-4 mb-16">
+  <div class="grid md:grid-cols-3 gap-6 mb-12">
+
     <!-- FREE -->
-    <div class="glass-card p-8">
-      <div class="text-slate-400 text-sm font-semibold uppercase tracking-widest mb-2">Free</div>
-      <div class="text-4xl font-extrabold text-white mb-1">Rp 0<span class="text-lg text-slate-400 font-normal">/bulan</span></div>
-      <p class="text-slate-500 text-sm mb-6">Mulai tanpa biaya</p>
-      <ul class="space-y-3 text-sm mb-8">
-        <li class="flex items-center gap-2 text-slate-300"><span class="text-green-400">✓</span> Top 10 saham screener</li>
-        <li class="flex items-center gap-2 text-slate-300"><span class="text-green-400">✓</span> Update setiap 30 menit</li>
-        <li class="flex items-center gap-2 text-slate-300"><span class="text-green-400">✓</span> Dashboard publik</li>
-        <li class="flex items-center gap-2 text-slate-500"><span class="text-slate-600">✗</span> Alert Telegram</li>
-        <li class="flex items-center gap-2 text-slate-500"><span class="text-slate-600">✗</span> Akses 500+ saham</li>
-        <li class="flex items-center gap-2 text-slate-500"><span class="text-slate-600">✗</span> Analisa komunitas eksklusif</li>
-      </ul>
-      <button onclick="selectPlan('free')" class="w-full border border-white/20 text-white py-3 rounded-xl font-semibold hover:bg-white/5 transition">Pilih Free</button>
-    </div>
-
-    <!-- VIP -->
-    <div class="relative neon-border rounded-2xl p-8 bg-purple-950/20">
-      <div class="absolute -top-3 left-1/2 -translate-x-1/2">
-        <span class="popular-badge text-white text-xs font-bold px-4 py-1 rounded-full">🔥 PALING POPULER</span>
-      </div>
-      <div class="text-purple-300 text-sm font-semibold uppercase tracking-widest mb-2">VIP</div>
-      <div class="text-4xl font-extrabold text-white mb-1">Rp 99.000<span class="text-lg text-slate-400 font-normal">/bulan</span></div>
-      <p class="text-slate-500 text-sm mb-6">Akses penuh tanpa batas</p>
-      <ul class="space-y-3 text-sm mb-8">
-        <li class="flex items-center gap-2 text-slate-300"><span class="text-green-400">✓</span> <b>500+ saham IDX</b> lengkap</li>
-        <li class="flex items-center gap-2 text-slate-300"><span class="text-green-400">✓</span> Update <b>real-time</b> 5 menit</li>
-        <li class="flex items-center gap-2 text-slate-300"><span class="text-green-400">✓</span> Alert Telegram otomatis</li>
-        <li class="flex items-center gap-2 text-slate-300"><span class="text-green-400">✓</span> Analisa komunitas eksklusif</li>
-        <li class="flex items-center gap-2 text-slate-300"><span class="text-green-400">✓</span> 12 indikator teknikal</li>
-        <li class="flex items-center gap-2 text-slate-300"><span class="text-green-400">✓</span> Priority support via WA</li>
-      </ul>
-      <button onclick="selectPlan('vip')" class="w-full neon-btn text-white py-3 rounded-xl font-semibold">Upgrade ke VIP</button>
-    </div>
-  </div>
-
-  <!-- INVOICE / CHECKOUT SECTION -->
-  <div id="checkout-section" class="hidden max-w-lg mx-auto px-4 mb-16">
-    <div class="glass-card neon-border p-8">
-      <h2 class="text-xl font-bold text-white mb-6 text-center">🧾 Invoice Pembayaran</h2>
-
-      <!-- Invoice Details -->
-      <div class="space-y-3 mb-6 text-sm">
-        <div class="flex justify-between">
-          <span class="text-slate-400">Nomor Invoice</span>
-          <span class="text-white font-mono font-bold" id="invoice-id">RC-0000</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-slate-400">Paket</span>
-          <span class="text-white font-semibold" id="invoice-plan">VIP</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-slate-400">Sub-total</span>
-          <span class="text-white">Rp 99.000</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-slate-400">Kode unik</span>
-          <span class="neon-text font-mono font-bold" id="unique-code">+000</span>
-        </div>
-        <div class="border-t border-white/10 pt-3 flex justify-between">
-          <span class="text-white font-semibold">Total Transfer</span>
-          <span class="neon-text font-bold text-lg" id="total-amount">Rp 99.000</span>
-        </div>
-      </div>
-
-      <!-- Rekening Tujuan -->
-      <div class="bg-purple-950/30 rounded-xl p-4 mb-6 text-sm border border-purple-800/30">
-        <div class="text-purple-300 font-semibold mb-2">📋 Transfer ke Rekening</div>
-        <div class="flex justify-between mb-1"><span class="text-slate-400">Bank</span><span class="text-white">BCA</span></div>
-        <div class="flex justify-between mb-1"><span class="text-slate-400">No. Rekening</span><span class="text-white font-mono font-bold">1234-5678-90</span></div>
-        <div class="flex justify-between"><span class="text-slate-400">Atas Nama</span><span class="text-white">Ritel Community</span></div>
-      </div>
-
-      <!-- Countdown -->
+    <div class="card p-6">
       <div class="text-center mb-6">
-        <div class="text-slate-400 text-xs mb-1">Invoice berlaku selama</div>
-        <div class="text-2xl font-mono font-bold neon-text countdown-digit" id="countdown">29:59</div>
+        <div class="text-2xl mb-2">📊</div>
+        <h2 class="text-xl font-bold text-white">Free</h2>
+        <div class="text-gray-400 text-sm mt-1">Untuk pemula</div>
+        <div class="text-3xl font-bold text-white mt-4">Rp 0</div>
+        <div class="text-gray-500 text-sm">Selamanya</div>
       </div>
+      <ul class="space-y-3 mb-6">
+        <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-300">Lihat top 50 saham IDX</span></li>
+        <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-300">Update setiap jam</span></li>
+        <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-300">Screener dasar (volume & change)</span></li>
+        <li class="flex items-center gap-2 text-sm text-gray-600"><span>✗</span><span>Alert Telegram</span></li>
+        <li class="flex items-center gap-2 text-sm text-gray-600"><span>✗</span><span>Indikator MA20 / MACD</span></li>
+        <li class="flex items-center gap-2 text-sm text-gray-600"><span>✗</span><span>973 saham full IDX</span></li>
+      </ul>
+      <a href="/" class="block w-full text-center py-3 rounded-xl font-semibold text-sm"
+        style="background:#1a1a2e;color:#6b7280;border:1px solid #2a2a3e">
+        Mulai Gratis
+      </a>
+    </div>
 
-      <!-- User Form -->
-      <div class="space-y-3 mb-6">
-        <input id="user-name" type="text" placeholder="Nama lengkap kamu" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-purple-500" />
-        <input id="user-phone" type="tel" placeholder="Nomor HP terdaftar (cth: 08123456789)" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-500 focus:outline-none focus:border-purple-500" />
+    <!-- VIP BULANAN (POPULAR) -->
+    <div class="relative p-1 rounded-2xl glow" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9,#4f46e5)">
+      <div class="card h-full p-6 rounded-xl" style="background:#13102a">
+        <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+          <span class="popular-badge text-white text-xs font-bold px-4 py-1 rounded-full">🔥 POPULER</span>
+        </div>
+        <div class="text-center mb-6">
+          <div class="text-2xl mb-2">⚡</div>
+          <h2 class="text-xl font-bold text-white">VIP Bulanan</h2>
+          <div class="text-purple-400 text-sm mt-1">Paling fleksibel</div>
+          <div class="mt-4">
+            <div class="text-4xl font-bold text-white">Rp 99.000</div>
+            <div class="text-gray-400 text-sm">per bulan</div>
+          </div>
+        </div>
+        <ul class="space-y-3 mb-6">
+          <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200">Semua fitur Free</span></li>
+          <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200 font-semibold">973 saham IDX full</span></li>
+          <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200">Alert Telegram real-time</span></li>
+          <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200">Indikator MA20 + MACD</span></li>
+          <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200">Update tiap 30 menit</span></li>
+          <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200">Screener custom volume & %</span></li>
+        </ul>
+        <button onclick="openInvoice('bulanan', 99000)"
+          class="block w-full text-center py-3 rounded-xl font-bold text-sm text-white"
+          style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)">
+          Beli Sekarang →
+        </button>
       </div>
+    </div>
 
-      <!-- WA Bridge Button -->
-      <button onclick="confirmPayment()" class="w-full neon-btn text-white py-4 rounded-xl font-bold text-base flex items-center justify-center gap-2">
-        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        Konfirmasi Pembayaran via WhatsApp
+    <!-- VIP TAHUNAN -->
+    <div class="card p-6" style="border-color:#ffd70040">
+      <div class="text-center mb-6">
+        <div class="text-2xl mb-2">💎</div>
+        <h2 class="text-xl font-bold text-white">VIP Tahunan</h2>
+        <div class="text-yellow-400 text-sm mt-1">Hemat 33%</div>
+        <div class="mt-4">
+          <div class="text-4xl font-bold" style="color:#ffd700">Rp 799.000</div>
+          <div class="text-gray-400 text-sm">per tahun <span class="line-through text-gray-600">Rp 1.188.000</span></div>
+        </div>
+      </div>
+      <ul class="space-y-3 mb-6">
+        <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200">Semua fitur VIP Bulanan</span></li>
+        <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200 font-semibold">Hemat Rp 389.000/tahun</span></li>
+        <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200">Prioritas support</span></li>
+        <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200">Early access fitur baru</span></li>
+        <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200">Custom screener filter</span></li>
+        <li class="flex items-center gap-2 text-sm"><span class="check">✓</span><span class="text-gray-200">Laporan mingguan PDF</span></li>
+      </ul>
+      <button onclick="openInvoice('tahunan', 799000)"
+        class="block w-full text-center py-3 rounded-xl font-bold text-sm"
+        style="background:linear-gradient(135deg,#78350f,#92400e);color:#ffd700;border:1px solid #ffd70040">
+        Beli Tahunan → Hemat 33%
       </button>
-      <p class="text-slate-500 text-xs text-center mt-3">Akun akan diupgrade dalam ≤ 10 menit setelah konfirmasi</p>
     </div>
   </div>
 
-  <!-- FOOTER -->
-  <footer class="border-t border-white/5 py-8 px-6 text-center">
-    <div class="text-white font-bold mb-1">RITEL COMMUNITY<span class="neon-text">.ID</span></div>
-    <div class="text-slate-500 text-xs mb-2">Developer: THIRAFI THARIQ AL IDRIS</div>
-    <div class="text-slate-600 text-xs">© 2024 Ritel Community. All rights reserved.</div>
-  </footer>
+  <!-- FAQ -->
+  <div class="card p-6 mb-6">
+    <h3 class="font-bold text-white text-lg mb-4">❓ FAQ</h3>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div>
+        <div class="font-semibold text-white text-sm mb-1">Bagaimana cara bayar?</div>
+        <div class="text-gray-400 text-sm">Transfer bank (BCA/Mandiri/BRI) atau QRIS. Konfirmasi via WhatsApp setelah transfer.</div>
+      </div>
+      <div>
+        <div class="font-semibold text-white text-sm mb-1">Kapan akses VIP aktif?</div>
+        <div class="text-gray-400 text-sm">Maks 1x24 jam setelah konfirmasi pembayaran. Biasanya langsung aktif.</div>
+      </div>
+      <div>
+        <div class="font-semibold text-white text-sm mb-1">Alert dikirim ke mana?</div>
+        <div class="text-gray-400 text-sm">Langsung ke Telegram kamu. Notifikasi real-time setiap ada saham yang memenuhi kriteria screener.</div>
+      </div>
+      <div>
+        <div class="font-semibold text-white text-sm mb-1">Bisa cancel kapan saja?</div>
+        <div class="text-gray-400 text-sm">Ya, cancel kapan saja. Akses tetap aktif hingga akhir periode berlangganan.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- INVOICE MODAL -->
+<div class="modal-overlay hidden" id="invoice-modal">
+  <div class="w-full max-w-md">
+    <!-- Invoice Card -->
+    <div class="invoice-card p-0 overflow-hidden">
+      <!-- Header Invoice -->
+      <div class="p-5" style="background:linear-gradient(135deg,#1a0a2e,#0a1a2e);border-bottom:1px solid #2a2a3e">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="text-xs text-gray-500 mb-1">INVOICE</div>
+            <div class="font-bold text-white text-lg">RITEL COMMUNITY.ID</div>
+            <div class="text-xs text-gray-400">Paket VIP Screener IDX</div>
+          </div>
+          <div class="text-right">
+            <div class="text-xs text-gray-500">No. Invoice</div>
+            <div class="text-sm font-bold text-neon-blue" id="inv-number">RC-2026-0001</div>
+            <div class="text-xs text-gray-500 mt-1" id="inv-date">—</div>
+          </div>
+        </div>
+      </div>
+      <!-- Body Invoice -->
+      <div class="p-5">
+        <div class="mb-4">
+          <div class="text-xs text-gray-500 mb-2">DETAIL PEMBELIAN</div>
+          <div class="flex justify-between items-center py-2" style="border-bottom:1px solid #2a2a3e">
+            <span class="text-sm text-gray-300" id="inv-item">VIP Bulanan</span>
+            <span class="text-sm font-bold text-white" id="inv-price">Rp 99.000</span>
+          </div>
+          <div class="flex justify-between items-center py-2">
+            <span class="text-xs text-gray-500">Masa Aktif</span>
+            <span class="text-xs text-gray-300" id="inv-period">1 bulan</span>
+          </div>
+          <div class="flex justify-between items-center py-2 mt-2 rounded-lg px-3" style="background:#1a1a2e">
+            <span class="text-sm font-bold text-white">TOTAL</span>
+            <span class="text-lg font-bold text-neon-green" id="inv-total">Rp 99.000</span>
+          </div>
+        </div>
+        <!-- Rekening -->
+        <div class="mb-4 p-3 rounded-lg" style="background:#0a1a2e;border:1px solid #0f3460">
+          <div class="text-xs text-gray-500 mb-2">💳 TRANSFER KE REKENING</div>
+          <div class="space-y-1">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-400">BCA</span>
+              <span class="text-white font-mono font-bold cursor-pointer hover:text-neon-blue" onclick="copyText('1234567890')">1234567890</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-400">Mandiri</span>
+              <span class="text-white font-mono font-bold cursor-pointer hover:text-neon-blue" onclick="copyText('0987654321')">0987654321</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-400">Atas Nama</span>
+              <span class="text-white">RITEL COMMUNITY</span>
+            </div>
+          </div>
+          <div class="text-xs text-gray-600 mt-2">Klik nomor rekening untuk copy</div>
+        </div>
+        <!-- Nomor HP -->
+        <div class="mb-4">
+          <label class="text-xs text-gray-500 block mb-1">Nomor WhatsApp kamu (untuk konfirmasi)</label>
+          <input type="tel" id="inv-phone" placeholder="08xxxxxxxxxx"
+            class="w-full px-4 py-2.5 rounded-lg text-sm text-white"
+            style="background:#1a1a2e;border:1px solid #2a2a3e;font-family:inherit">
+        </div>
+        <!-- WhatsApp Button -->
+        <button onclick="sendWhatsApp()"
+          class="wa-btn w-full py-3 rounded-xl font-bold text-white text-sm flex items-center justify-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+            <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.558 4.117 1.533 5.847L.057 23.784a.5.5 0 0 0 .613.613l5.938-1.476A11.951 11.951 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.955 9.955 0 0 1-5.127-1.417l-.367-.218-3.527.877.893-3.527-.238-.383A9.958 9.958 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+          </svg>
+          Konfirmasi via WhatsApp
+        </button>
+        <button onclick="closeInvoice()"
+          class="w-full py-2.5 rounded-xl text-sm text-gray-500 mt-2 hover:text-gray-300">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 
+<!-- BOTTOM NAV -->
+<nav class="fixed bottom-0 left-0 right-0 md:hidden" style="background:#10101a;border-top:1px solid #1a1a2e">
+  <div class="flex">
+    <a href="/" class="flex-1 flex flex-col items-center py-3 text-gray-500">
+      <span class="text-lg">📊</span><span class="text-xs mt-1">Screener</span>
+    </a>
+    <a href="/pricing" class="flex-1 flex flex-col items-center py-3 text-neon-purple">
+      <span class="text-lg">👑</span><span class="text-xs mt-1">VIP</span>
+    </a>
+    <a href="/admin" class="flex-1 flex flex-col items-center py-3 text-gray-500">
+      <span class="text-lg">⚙️</span><span class="text-xs mt-1">Admin</span>
+    </a>
+  </div>
+</nav>
+<div class="md:hidden h-16"></div>
+
 <script>
-// STARFIELD
-const canvas = document.getElementById('starfield');
-const ctx = canvas.getContext('2d');
-let stars = [];
-function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-function initStars() {
-  stars = [];
-  for (let i = 0; i < 200; i++) {
-    stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-      r: Math.random() * 1.5 + 0.2, speed: Math.random() * 0.3 + 0.05,
-      opacity: Math.random() * 0.7 + 0.3 });
-  }
+let currentPaket = 'bulanan';
+let currentPrice = 99000;
+
+function openInvoice(paket, price) {
+  currentPaket = paket;
+  currentPrice = price;
+  const now = new Date();
+  const invNum = 'RC-' + now.getFullYear() + '-' + String(Math.floor(Math.random()*9000)+1000);
+  const dateStr = now.toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
+  
+  document.getElementById('inv-number').textContent = invNum;
+  document.getElementById('inv-date').textContent = dateStr;
+  document.getElementById('inv-item').textContent = 'VIP ' + (paket === 'bulanan' ? 'Bulanan' : 'Tahunan');
+  document.getElementById('inv-period').textContent = paket === 'bulanan' ? '1 bulan' : '12 bulan';
+  document.getElementById('inv-price').textContent = 'Rp ' + price.toLocaleString('id-ID');
+  document.getElementById('inv-total').textContent = 'Rp ' + price.toLocaleString('id-ID');
+  document.getElementById('invoice-modal').classList.remove('hidden');
 }
-function drawStars() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  stars.forEach(s => {
-    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(200,180,255,${s.opacity})`; ctx.fill();
-    s.y += s.speed;
-    if (s.y > canvas.height) { s.y = 0; s.x = Math.random() * canvas.width; }
+
+function closeInvoice() {
+  document.getElementById('invoice-modal').classList.add('hidden');
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    // Simple feedback
+    const el = event.target;
+    const orig = el.textContent;
+    el.textContent = '✅ Tersalin!';
+    el.style.color = '#00ff88';
+    setTimeout(() => { el.textContent = orig; el.style.color = ''; }, 2000);
   });
-  requestAnimationFrame(drawStars);
-}
-resize(); initStars(); drawStars();
-window.addEventListener('resize', () => { resize(); initStars(); });
-
-// INVOICE LOGIC
-function genInvoiceId() {
-  const ts = Date.now().toString().slice(-6);
-  return `RC-${ts}`;
-}
-function genUniqueCode() {
-  return Math.floor(Math.random() * 900) + 100;
 }
 
-let invoiceId = genInvoiceId();
-let uniqueCode = genUniqueCode();
-let countdownInterval = null;
+function sendWhatsApp() {
+  const phone = document.getElementById('inv-phone').value.trim();
+  const paketLabel = currentPaket === 'bulanan' ? 'VIP Bulanan (Rp 99.000)' : 'VIP Tahunan (Rp 799.000)';
+  const invNum = document.getElementById('inv-number').textContent;
+  
+  const msg = `Halo Ritel Community! 👋
 
-function selectPlan(plan) {
-  document.getElementById('checkout-section').classList.remove('hidden');
-  document.getElementById('checkout-section').scrollIntoView({ behavior: 'smooth' });
-  invoiceId = genInvoiceId();
-  uniqueCode = genUniqueCode();
-  document.getElementById('invoice-id').textContent = invoiceId;
-  const basePrice = plan === 'vip' ? 99000 : 0;
-  document.getElementById('invoice-plan').textContent = plan.toUpperCase();
-  document.getElementById('unique-code').textContent = `+${uniqueCode}`;
-  document.getElementById('total-amount').textContent = `Rp ${(basePrice + uniqueCode).toLocaleString()}`;
+Saya ingin konfirmasi pembayaran:
+📋 Invoice: ${invNum}
+📦 Paket: ${paketLabel}
+💰 Nominal: Rp ${currentPrice.toLocaleString('id-ID')}
+📱 No. WA Saya: ${phone || '(belum diisi)'}
 
-  // Reset + start countdown
-  clearInterval(countdownInterval);
-  let seconds = 30 * 60;
-  function tick() {
-    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-    const s = (seconds % 60).toString().padStart(2, '0');
-    document.getElementById('countdown').textContent = `${m}:${s}`;
-    if (seconds <= 0) { clearInterval(countdownInterval); document.getElementById('countdown').textContent = 'KADALUARSA'; }
-    seconds--;
-  }
-  tick();
-  countdownInterval = setInterval(tick, 1000);
+Mohon diverifikasi dan aktifkan akses VIP saya. Terima kasih!`;
+
+  const waNumber = '6282172222494'; // +6282172222494
+  const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`;
+  window.open(waUrl, '_blank');
 }
 
-function confirmPayment() {
-  const name = document.getElementById('user-name').value.trim();
-  const phone = document.getElementById('user-phone').value.trim();
-  if (!name || !phone) { alert('Lengkapi nama dan nomor HP kamu dulu ya!'); return; }
-  const totalEl = document.getElementById('total-amount').textContent;
-  const msg = encodeURIComponent(
-    `Halo Admin Ritel Community, saya ingin mengonfirmasi pembayaran untuk nomor invoice ${invoiceId}. Berikut bukti transfer saya untuk upgrade akun ke VIP atas nama: ${name} dengan nomor terdaftar ${phone}`
-  );
-  window.open(`https://wa.me/6282172222494?text=${msg}`, '_blank');
-}
-
-// Auto-open if ?plan=vip in URL
-const params = new URLSearchParams(window.location.search);
-if (params.get('plan') === 'vip') selectPlan('vip');
+// Close modal on backdrop click
+document.getElementById('invoice-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeInvoice();
+});
 </script>
 </body>
 </html>

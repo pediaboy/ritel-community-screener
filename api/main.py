@@ -1,527 +1,598 @@
 """
-Ritel Community Screener — Backend v4.0
-Integrasi: GoAPI IDX + yfinance + Supabase
+Ritel Community Screener — v5.0 (GoAPI Full Integration)
+FastAPI backend: GoAPI batching, pandas-ta indicators, Supabase upsert, Telegram alerts
 """
+
 import os
+import math
 import time
-import random
+import asyncio
 import requests
 import pandas as pd
-import yfinance as yf
-import pathlib
-from datetime import datetime, timezone
+from datetime import datetime, timedelta
 from typing import Optional, List
-from fastapi import FastAPI, HTTPException, Depends, Header, Request, BackgroundTasks
-from fastapi.middleware.cors import CORSMiddleware
+
+from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, Request
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from supabase import create_client, Client
 
-# ─────────────────────────────────────────
-# ENV
-# ─────────────────────────────────────────
-SUPABASE_URL       = os.getenv("SUPABASE_URL", "").rstrip("/")
-SUPABASE_KEY       = os.getenv("SUPABASE_KEY", "")
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
-TELEGRAM_CHAT_ID   = os.getenv("TELEGRAM_CHAT_ID", "")
-ADMIN_SECRET       = os.getenv("ADMIN_SECRET", "pedia123")
-GOAPI_KEY          = os.getenv("GOAPI_KEY", "")
-GOAPI_BASE_URL     = "https://api.goapi.io"
-
-# ─────────────────────────────────────────
-# SUPABASE CLIENT
-# ─────────────────────────────────────────
-_sb = None
-def get_supabase():
-    global _sb
-    if _sb is None and SUPABASE_URL and SUPABASE_KEY:
-        try:
-            from supabase import create_client
-            _sb = create_client(SUPABASE_URL, SUPABASE_KEY)
-        except Exception as e:
-            print(f"[Supabase] Init error: {e}")
-    return _sb
-
-# ─────────────────────────────────────────
-# API LOG — catat setiap request ke GoAPI
-# ─────────────────────────────────────────
-def write_api_log(service_name: str, status: str, message: str):
-    """Catat hasil request ke tabel api_logs."""
+# ── Pandas-TA (graceful fallback) ─────────────────────────────────────────────
+try:
+    import pandas_ta as ta
+    HAS_TA = True
+except Exception:
     try:
-        sb = get_supabase()
-        if not sb:
-            return
-        sb.table("api_logs").insert({
-            "service_name": service_name,
-            "status":       status,
-            "message":      message[:500],
-            "created_at":   datetime.now(timezone.utc).isoformat(),
+        import ta as ta_lib
+        HAS_TA = False  # use ta_lib fallback
+    except Exception:
+        HAS_TA = False
+        ta_lib = None
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONFIG
+# ═══════════════════════════════════════════════════════════════════════════════
+SUPABASE_URL   = os.getenv("SUPABASE_URL", "")
+SUPABASE_KEY   = os.getenv("SUPABASE_KEY", "")
+ADMIN_SECRET   = os.getenv("ADMIN_SECRET", "pedia123")
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
+GOAPI_KEY      = os.getenv("GOAPI_KEY", "")
+GOAPI_BASE     = "https://api.goapi.io"
+GOAPI_HEADERS  = {"X-API-KEY": GOAPI_KEY, "accept": "application/json"}
+
+# Screener thresholds
+VOLUME_MIN     = 5_000_000
+CHANGE_PCT_MIN = 3.0   # % kenaikan minimum untuk alert
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# APP & SUPABASE INIT
+# ═══════════════════════════════════════════════════════════════════════════════
+app = FastAPI(title="Ritel Community Screener v5.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+supabase: Optional[Client] = None
+if SUPABASE_URL and SUPABASE_KEY:
+    try:
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+    except Exception as e:
+        print(f"[WARN] Supabase init failed: {e}")
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MODELS
+# ═══════════════════════════════════════════════════════════════════════════════
+class UpgradeUserRequest(BaseModel):
+    phone_number: str
+    name: Optional[str] = None
+
+class AdminAuth(BaseModel):
+    secret: str
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# HELPERS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def check_admin(request: Request):
+    secret = request.headers.get("X-Admin-Secret") or request.query_params.get("secret", "")
+    if secret != ADMIN_SECRET:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+def goapi_request(path: str, params: dict = None, retries: int = 3) -> dict:
+    url = f"{GOAPI_BASE}{path}"
+    for attempt in range(1, retries + 1):
+        try:
+            r = requests.get(url, headers=GOAPI_HEADERS, params=params, timeout=20)
+            r.raise_for_status()
+            return r.json()
+        except Exception as e:
+            if attempt < retries:
+                time.sleep(2 ** attempt)
+            else:
+                raise
+    return {}
+
+def send_telegram(message: str):
+    """Send Telegram notification."""
+    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT:
+        return
+    try:
+        requests.post(
+            f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
+            json={"chat_id": TELEGRAM_CHAT, "text": message, "parse_mode": "Markdown"},
+            timeout=10
+        )
+    except Exception as e:
+        print(f"[TELEGRAM ERROR] {e}")
+
+def log_api(service: str, status: str, message: str):
+    """Log ke Supabase api_logs."""
+    if not supabase:
+        return
+    try:
+        supabase.table("api_logs").insert({
+            "service_name": service,
+            "status": status,
+            "message": message
         }).execute()
     except Exception as e:
-        print(f"[api_logs] Write error: {e}")
+        print(f"[LOG ERROR] {e}")
 
-# ─────────────────────────────────────────
-# GOAPI SERVICE
-# ─────────────────────────────────────────
-GOAPI_TIMEOUT = 15
-GOAPI_MAX_RETRY = 3
+def chunk_list(lst: list, size: int) -> list:
+    return [lst[i:i+size] for i in range(0, len(lst), size)]
 
-def goapi_request(endpoint: str, params: dict = None) -> dict:
+def compute_indicators(prices: list) -> dict:
     """
-    HTTP GET ke GoAPI dengan:
-    - Retry otomatis 3x
-    - Timeout 15 detik
-    - API key dari ENV (tidak hardcode)
-    - Logging ke api_logs
+    Hitung MA20 dan MACD dari list harga close.
+    Minimal 26 data points untuk MACD.
+    Returns: {ma20, macd, macd_signal, indicator_triggered}
     """
-    if not GOAPI_KEY:
-        write_api_log("goapi", "ERROR", "GOAPI_KEY tidak ditemukan di environment")
-        raise ValueError("GOAPI_KEY tidak diset di environment variable")
+    result = {"ma20": None, "macd": None, "macd_signal": None, "indicator_triggered": []}
+    if len(prices) < 5:
+        return result
+    s = pd.Series(prices, dtype=float)
+    # MA20
+    if len(s) >= 20:
+        result["ma20"] = round(float(s.rolling(20).mean().iloc[-1]), 2)
+    elif len(s) >= 5:
+        result["ma20"] = round(float(s.rolling(len(s)).mean().iloc[-1]), 2)
+    # MACD
+    if len(s) >= 26:
+        if HAS_TA:
+            try:
+                macd_df = ta.macd(s, fast=12, slow=26, signal=9)
+                if macd_df is not None and not macd_df.empty:
+                    cols = macd_df.columns.tolist()
+                    macd_val = float(macd_df[cols[0]].iloc[-1])
+                    sig_val  = float(macd_df[cols[2]].iloc[-1])
+                    result["macd"] = round(macd_val, 4)
+                    result["macd_signal"] = round(sig_val, 4)
+                    if macd_val > sig_val:
+                        result["indicator_triggered"].append("MACD_BULLISH")
+            except Exception:
+                pass
+    return result
 
-    url = f"{GOAPI_BASE_URL}/{endpoint.lstrip('/')}"
-    query = {"api_key": GOAPI_KEY}
-    if params:
-        query.update(params)
+# ═══════════════════════════════════════════════════════════════════════════════
+# CORE: GoAPI FETCH & SCREENER
+# ═══════════════════════════════════════════════════════════════════════════════
 
-    last_error = None
-    for attempt in range(1, GOAPI_MAX_RETRY + 1):
-        try:
-            resp = requests.get(url, params=query, timeout=GOAPI_TIMEOUT)
-            resp.raise_for_status()
-            data = resp.json()
-
-            if data.get("status") == "success":
-                write_api_log("goapi", "SUCCESS", f"{endpoint} → {data.get('message','OK')}")
-                return data
-            else:
-                msg = data.get("message", "Unknown error")
-                write_api_log("goapi", "ERROR", f"{endpoint} → {msg}")
-                raise ValueError(f"GoAPI error: {msg}")
-
-        except requests.exceptions.Timeout:
-            last_error = f"Timeout (attempt {attempt}/{GOAPI_MAX_RETRY})"
-            print(f"[GoAPI] {last_error}")
-        except requests.exceptions.RequestException as e:
-            last_error = f"Request error: {e} (attempt {attempt}/{GOAPI_MAX_RETRY})"
-            print(f"[GoAPI] {last_error}")
-        except ValueError as e:
-            write_api_log("goapi", "ERROR", str(e))
-            raise
-
-        if attempt < GOAPI_MAX_RETRY:
-            time.sleep(2 ** attempt)   # exponential backoff: 2s, 4s
-
-    write_api_log("goapi", "ERROR", f"{endpoint} gagal setelah {GOAPI_MAX_RETRY}x retry: {last_error}")
-    raise RuntimeError(f"GoAPI {endpoint} gagal setelah {GOAPI_MAX_RETRY}x retry: {last_error}")
-
-
-def goapi_status() -> dict:
-    """Cek apakah GoAPI aktif. Return {online, message}."""
+def fetch_lq45_symbols() -> List[str]:
+    """Fetch daftar LQ45 dari GoAPI."""
     try:
-        goapi_request("stock/idx/companies")
-        return {"online": True, "status": "ONLINE"}
+        d = goapi_request("/stock/idx/index/LQ45/items")
+        items = d.get("data", {}).get("results", []) or d.get("data", [])
+        if items and isinstance(items[0], str):
+            return items
+        elif items and isinstance(items[0], dict):
+            return [x.get("symbol", "") for x in items if x.get("symbol")]
     except Exception as e:
-        return {"online": False, "status": "OFFLINE", "error": str(e)}
+        print(f"[LQ45 ERROR] {e}")
+    return []
 
-
-# ─────────────────────────────────────────
-# syncCompanies — ambil data GoAPI → Supabase
-# ─────────────────────────────────────────
-def syncCompanies() -> dict:
-    """
-    Fetch 973 companies dari GoAPI IDX,
-    validasi response, upsert ke Supabase berdasarkan symbol (no duplicate).
-    """
-    print("[syncCompanies] Memulai sync dari GoAPI...")
-    start = time.time()
-
-    # 1. Fetch dari GoAPI
+def fetch_idxall_symbols() -> List[str]:
+    """Fetch semua symbol IDX dari companies table (Supabase)."""
+    if not supabase:
+        return []
     try:
-        resp = goapi_request("stock/idx/companies")
-    except Exception as e:
-        return {"success": False, "error": str(e), "saved": 0}
+        result = supabase.table("companies").select("symbol").execute()
+        return [r["symbol"] for r in result.data if r.get("symbol")]
+    except Exception:
+        return []
 
-    # 2. Validasi response
-    results = resp.get("data", {}).get("results", [])
-    if not results:
-        write_api_log("syncCompanies", "ERROR", "Response kosong atau format tidak dikenali")
-        return {"success": False, "error": "Data kosong dari GoAPI", "saved": 0}
-
-    print(f"[syncCompanies] Dapat {len(results)} companies dari GoAPI")
-
-    # 3. Upsert ke Supabase
-    sb = get_supabase()
-    if not sb:
-        return {"success": False, "error": "Supabase tidak tersambung", "saved": 0}
-
-    now_ts = datetime.now(timezone.utc).isoformat()
-    saved  = 0
-    errors = 0
-
-    # Batch upsert per 50 untuk efisiensi
-    batch_size = 50
-    for i in range(0, len(results), batch_size):
-        batch = results[i : i + batch_size]
-        rows  = []
-        for item in batch:
-            sym = (item.get("symbol") or "").strip().upper()
-            if not sym:
-                continue
-            rows.append({
-                "symbol":     sym,
-                "name":       (item.get("name") or "").strip(),
-                "logo":       item.get("logo", ""),
-                "updated_at": now_ts,
-            })
-
-        if not rows:
-            continue
-
-        try:
-            sb.table("companies").upsert(rows, on_conflict="symbol").execute()
-            saved += len(rows)
-        except Exception as e:
-            errors += len(rows)
-            print(f"[syncCompanies] Batch {i//batch_size+1} error: {e}")
-
-    elapsed = round(time.time() - start, 2)
-    msg = f"Sync selesai: {saved} companies disimpan, {errors} error, {elapsed}s"
-    write_api_log("syncCompanies", "SUCCESS" if saved > 0 else "ERROR", msg)
-    print(f"[syncCompanies] {msg}")
-
-    return {
-        "success": True,
-        "total_from_api": len(results),
-        "saved":          saved,
-        "errors":         errors,
-        "elapsed_sec":    elapsed,
-        "timestamp":      now_ts,
-    }
-
-
-# ─────────────────────────────────────────
-# STOCK SCRAPER — yfinance batch
-# ─────────────────────────────────────────
-IDX_TICKERS = [
-    "AALI","ACES","ADHI","ADRO","AGII","AGRO","AKRA","AMFG","AMMN","AMRT",
-    "ANTM","ARNA","ASII","ASRI","AUTO","BBCA","BBNI","BBRI","BBTN","BDMN",
-    "BFIN","BJBR","BJTM","BKSL","BMRI","BMTR","BNGA","BNII","BRMS","BRPT",
-    "BSDE","BSSR","BUKA","BULL","BUMI","CAKK","CARR","CASA","CASS","CFIN",
-    "CINT","CITA","CMNP","CMRY","CNET","CPIN","CTRA","CUAN","DART","DEWA",
-    "DLTA","DMAS","DNET","DOID","DSNG","DUTI","DVLA","EKAD","ELSA","EMDE",
-    "EMTK","ERAA","ESSA","FAST","FILM","FREN","GAMA","GDST","GEMS","GGRM",
-    "GIAA","GJTL","GOOD","GOTO","GPRA","HEAL","HERO","HMSP","HOKI","HRUM",
-    "ICBP","IGAR","IIKP","IMAS","IMPC","INAF","INAI","INCI","INCO","INDF",
-    "INDY","INKP","INPP","INTP","IPCC","IPCM","ISAT","ITMG","JAWA","JECC",
-    "JKON","JPFA","JRPT","JSMR","KAEF","KBLI","KBLN","KDSI","KIJA","KINO",
-    "KLBF","KRAS","LPPF","LSIP","LTLS","MAPI","MBAP","MBSS","MDKA","MEDC",
-    "MEGA","MERK","MIKA","MKPI","MLBI","MNCN","MPPA","MREI","MSKY","MTDL",
-    "MTEL","MTLA","MTOR","NCKL","NIKL","NISP","NOBU","NRCA","OCAP","PADI",
-    "PANR","PANS","PGAS","PJAA","PLIN","PNBN","PNIN","PNLF","PPRE","PPRO",
-    "PTBA","PTPP","PTRO","PWON","PYFA","RAJA","RDTX","RIGS","ROTI","SAME",
-    "SCCO","SCMA","SGRO","SIDO","SILO","SIMP","SKBM","SKLT","SMBR","SMCB",
-    "SMDR","SMGR","SMRA","SMSM","SOHO","SRIL","SRTG","SSIA","SSMS","TBIG",
-    "TBLA","TCID","TELE","TINS","TKIM","TLKM","TOBA","TOTL","TOTO","TOWR",
-    "TPIA","TRIM","TSPC","TURI","ULTJ","UNIC","UNSP","UNTR","UNVR","VIVA",
-    "WEGE","WEHA","WIKA","WINS","WOOD","WSKT","WTON","YPAS","ZINC",
+# Top 100 IDX saham paling aktif — fallback statis
+TOP100_IDX = [
+    "BBCA","BBRI","BMRI","TLKM","ASII","UNVR","ICBP","INDF","KLBF","GGRM",
+    "HMSP","PTBA","ADRO","BYAN","ANTM","INCO","VALE","MDKA","SMGR","INKP",
+    "TPIA","BRPT","PGEO","MEDC","EMTK","MIKA","SILO","HEAL","MYOR","CPIN",
+    "JPFA","MAIN","TBLA","AALI","LSIP","SIMP","PALM","DSNG","SSMS","BWPT",
+    "BSDE","CTRA","LPKR","PWON","SMRA","DMAS","JRPT","KIJA","MKPI","PLIN",
+    "BBNI","BBTN","BDMN","MEGA","BNII","BNGA","NISP","PNBN","BJTM","BJBR",
+    "GOTO","BUKA","EMTK","TBIG","TOWR","EXCL","ISAT","FREN","MTEL","LINK",
+    "JSMR","WIKA","WSKT","PTPP","ADHI","NRCA","TOTL","ACST","SSIA","CMNP",
+    "INTP","SMCB","WTON","ARNA","TOTO","MLIA","AMFG","KIAS","MARK","SRSN",
+    "PGAS","ELSA","AKRA","RALS","MAPI","ACES","LPPF","MPPA","AMRT","MIDI",
 ]
 
-def scrape_all_stocks(tickers: List[str] = None) -> dict:
-    if tickers is None:
-        tickers = IDX_TICKERS
-    print(f"[Scraper] Scrape {len(tickers)} tickers via yfinance...")
-    start = time.time()
-    batch_size = 100
-    all_rows   = []
+async def run_goapi_fetch() -> dict:
+    """
+    Core function: fetch harga dari GoAPI, batch max 50,
+    compute indicators, upsert Supabase, kirim Telegram jika ada screener hit.
+    """
+    start_time = time.time()
+    log_api("fetchGoAPI", "INFO", "Mulai fetch GoAPI prices...")
 
-    for i in range(0, len(tickers), batch_size):
-        batch   = tickers[i : i + batch_size]
-        symbols = [f"{t}.JK" for t in batch]
+    # 1. Ambil symbol list
+    symbols = fetch_lq45_symbols()
+    if not symbols:
+        symbols = TOP100_IDX
+    # Tambah IDX companies dari Supabase (max 200 total)
+    db_symbols = fetch_idxall_symbols()
+    all_symbols = list(dict.fromkeys(symbols + db_symbols))[:200]
+
+    print(f"[GoAPI] Total symbols: {len(all_symbols)}")
+
+    # 2. Pecah jadi chunks max 50
+    chunks = chunk_list(all_symbols, 50)
+    all_results = []
+    errors = 0
+
+    for i, chunk in enumerate(chunks):
+        sym_str = ",".join(chunk)
         try:
-            data = yf.download(
-                " ".join(symbols), period="2d", interval="1d",
-                auto_adjust=True, progress=False, threads=True
-            )
-            if data.empty:
-                continue
-            close  = data["Close"].iloc[-1]
-            volume = data["Volume"].iloc[-1]
-            now_ts = datetime.now(timezone.utc).isoformat()
-            for ticker in batch:
-                sym   = f"{ticker}.JK"
-                price = close.get(sym)
-                vol   = volume.get(sym)
-                if price is None or str(price) == "nan":
-                    continue
-                all_rows.append({
-                    "ticker":     ticker,
-                    "price":      round(float(price), 2),
-                    "volume":     float(vol) if vol and str(vol) != "nan" else 0.0,
-                    "updated_at": now_ts,
-                })
+            d = goapi_request(f"/stock/idx/prices?symbols={sym_str}")
+            results = d.get("data", {}).get("results", []) or d.get("data", [])
+            if isinstance(results, list):
+                all_results.extend(results)
+            time.sleep(0.5)  # rate limit courtesy
         except Exception as e:
-            print(f"[Scraper] Batch {i//batch_size+1} error: {e}")
-        time.sleep(random.uniform(1.0, 2.0))
+            errors += 1
+            print(f"[GoAPI chunk {i+1}] Error: {e}")
 
-    sb    = get_supabase()
-    saved = 0
-    if sb and all_rows:
-        for row in all_rows:
-            try:
-                sb.table("stocks_data").upsert(row, on_conflict="ticker").execute()
-                saved += 1
-            except Exception as e:
-                print(f"[DB] {row['ticker']} error: {e}")
+    print(f"[GoAPI] Fetched {len(all_results)} price records, {errors} chunk errors")
 
-    elapsed = round(time.time() - start, 2)
-    return {"scraped": len(all_rows), "saved": saved, "elapsed_sec": elapsed,
-            "timestamp": datetime.now(timezone.utc).isoformat()}
+    if not all_results:
+        log_api("fetchGoAPI", "ERROR", "Tidak ada data dari GoAPI")
+        return {"status": "error", "message": "Tidak ada data dari GoAPI", "count": 0}
 
+    # 3. Upsert ke Supabase & cek screener
+    upserted = 0
+    screener_hits = []
+    upsert_batch = []
 
-# ─────────────────────────────────────────
-# TELEGRAM
-# ─────────────────────────────────────────
-def send_telegram(message: str, chat_id: str = None) -> bool:
-    target = chat_id or TELEGRAM_CHAT_ID
-    if not TELEGRAM_BOT_TOKEN or not target:
-        return False
-    try:
-        r = requests.post(
-            f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
-            json={"chat_id": target, "text": message, "parse_mode": "HTML"}, timeout=10
-        )
-        r.raise_for_status()
-        return True
-    except Exception as e:
-        print(f"[Telegram] {e}")
-        return False
+    for item in all_results:
+        ticker = item.get("symbol", "")
+        close  = item.get("close")
+        volume = item.get("volume")
+        change_pct = item.get("change_pct")
+        if not ticker or close is None:
+            continue
 
-# ─────────────────────────────────────────
-# FASTAPI APP
-# ─────────────────────────────────────────
-app = FastAPI(title="Ritel Community Screener", version="4.0.0")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True,
-                   allow_methods=["*"], allow_headers=["*"])
-
-static_dir = pathlib.Path(__file__).parent.parent / "static"
-if static_dir.exists():
-    app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
-
-@app.exception_handler(Exception)
-async def global_error(request: Request, exc: Exception):
-    return JSONResponse(status_code=500, content={"error": str(exc)})
-
-def require_admin(x_admin_secret: str = Header(...)):
-    if x_admin_secret != ADMIN_SECRET:
-        raise HTTPException(403, "Admin secret salah.")
-
-# ─── MODELS ───
-class UpgradeUserReq(BaseModel):
-    phone_number: str
-
-class StockUpsert(BaseModel):
-    ticker: str; price: float; volume: float
-
-class AlertCreate(BaseModel):
-    ticker: str; price: float; indicator_triggered: str
-    telegram_chat_id: Optional[str] = None
-
-# ─────────────────────────────────────────
-# ROUTES — FRONTEND
-# ─────────────────────────────────────────
-@app.get("/")
-def index():
-    p = static_dir / "index.html"
-    return FileResponse(str(p)) if p.exists() else {"message": "Ritel Community Screener v4"}
-
-@app.get("/pricing")
-def pricing():
-    p = static_dir / "pricing.html"
-    return FileResponse(str(p)) if p.exists() else {"error": "not found"}
-
-@app.get("/admin")
-def admin_page():
-    p = static_dir / "admin.html"
-    return FileResponse(str(p)) if p.exists() else {"error": "not found"}
-
-# ─────────────────────────────────────────
-# ROUTES — PUBLIC
-# ─────────────────────────────────────────
-@app.get("/api/health")
-def health():
-    return {"status": "ok", "version": "4.0.0", "ts": datetime.now(timezone.utc).isoformat()}
-
-@app.get("/api/stocks")
-def get_stocks(limit: int = 100, offset: int = 0):
-    sb = get_supabase()
-    if not sb:
-        return {"data": [], "error": "Supabase belum terhubung"}
-    try:
-        r = (sb.table("stocks_data").select("*")
-               .order("volume", desc=True).range(offset, offset + limit - 1).execute())
-        return {"data": r.data, "total": len(r.data), "live": True}
-    except Exception as e:
-        return {"data": [], "error": str(e)}
-
-@app.get("/api/alerts")
-def get_alerts(limit: int = 20):
-    sb = get_supabase()
-    if not sb: return {"data": []}
-    try:
-        r = (sb.table("screener_alerts").select("*")
-               .order("timestamp", desc=True).limit(limit).execute())
-        return {"data": r.data}
-    except Exception as e:
-        return {"data": [], "error": str(e)}
-
-@app.get("/api/tickers")
-def get_tickers():
-    return {"tickers": IDX_TICKERS, "total": len(IDX_TICKERS)}
-
-# ─── COMPANIES ───
-@app.get("/api/companies")
-def get_companies(search: str = "", limit: int = 50, offset: int = 0):
-    sb = get_supabase()
-    if not sb: return {"data": [], "total": 0}
-    try:
-        q = sb.table("companies").select("*", count="exact")
-        if search:
-            q = q.or_(f"symbol.ilike.%{search}%,name.ilike.%{search}%")
-        r = q.order("symbol").range(offset, offset + limit - 1).execute()
-        return {"data": r.data, "total": r.count or 0}
-    except Exception as e:
-        return {"data": [], "total": 0, "error": str(e)}
-
-@app.get("/api/companies/sync-status")
-def companies_sync_status():
-    sb = get_supabase()
-    if not sb: return {"total": 0, "last_sync": None}
-    try:
-        count_r = sb.table("companies").select("symbol", count="exact").execute()
-        last_r  = (sb.table("companies").select("updated_at")
-                     .order("updated_at", desc=True).limit(1).execute())
-        log_r   = (sb.table("api_logs").select("*")
-                     .eq("service_name", "syncCompanies")
-                     .order("created_at", desc=True).limit(1).execute())
-        return {
-            "total":     count_r.count or 0,
-            "last_sync": last_r.data[0]["updated_at"] if last_r.data else None,
-            "last_log":  log_r.data[0] if log_r.data else None,
+        row = {
+            "ticker":     ticker,
+            "price":      float(close),
+            "volume":     int(volume) if volume else 0,
+            "change_pct": round(float(change_pct), 4) if change_pct else 0.0,
+            "updated_at": datetime.utcnow().isoformat()
         }
-    except Exception as e:
-        return {"total": 0, "error": str(e)}
+        upsert_batch.append(row)
 
-# ─── API LOGS ───
-@app.get("/api/admin/logs", dependencies=[Depends(require_admin)])
-def get_logs(limit: int = 50, service: str = ""):
-    sb = get_supabase()
-    if not sb: return {"data": []}
-    try:
-        q = sb.table("api_logs").select("*").order("created_at", desc=True).limit(limit)
-        if service:
-            q = q.eq("service_name", service)
-        r = q.execute()
-        return {"data": r.data}
-    except Exception as e:
-        return {"data": [], "error": str(e)}
+        # Screener check: volume besar + kenaikan signifikan
+        indicators_hit = []
+        if volume and int(volume) >= VOLUME_MIN:
+            indicators_hit.append(f"VOL>{VOLUME_MIN//1_000_000}M")
+        if change_pct and float(change_pct) >= CHANGE_PCT_MIN:
+            indicators_hit.append(f"NAIK+{round(float(change_pct),2)}%")
 
-# ─────────────────────────────────────────
-# ROUTES — SCRAPING & SYNC
-# ─────────────────────────────────────────
-@app.post("/api/cron-scrape")
-def cron_scrape(background_tasks: BackgroundTasks, x_admin_secret: str = Header(...)):
-    if x_admin_secret != ADMIN_SECRET:
-        raise HTTPException(403, "Admin secret salah.")
-    background_tasks.add_task(scrape_all_stocks, IDX_TICKERS)
-    return {"message": f"Scraping {len(IDX_TICKERS)} tickers dimulai!", "ts": datetime.now(timezone.utc).isoformat()}
+        if indicators_hit:
+            screener_hits.append({
+                "ticker":   ticker,
+                "price":    float(close),
+                "volume":   int(volume) if volume else 0,
+                "change_pct": round(float(change_pct), 4) if change_pct else 0.0,
+                "indicators": indicators_hit
+            })
 
-@app.post("/api/admin/force-scrape", dependencies=[Depends(require_admin)])
-def force_scrape(background_tasks: BackgroundTasks):
-    background_tasks.add_task(scrape_all_stocks, IDX_TICKERS)
-    return {"message": f"Force scrape {len(IDX_TICKERS)} tickers dimulai!", "ts": datetime.now(timezone.utc).isoformat()}
+    # Batch upsert ke stocks_data
+    if supabase and upsert_batch:
+        for batch in chunk_list(upsert_batch, 50):
+            try:
+                supabase.table("stocks_data").upsert(
+                    batch, on_conflict="ticker"
+                ).execute()
+                upserted += len(batch)
+            except Exception as e:
+                print(f"[SUPABASE upsert error] {e}")
 
-@app.post("/api/admin/sync-companies", dependencies=[Depends(require_admin)])
-def sync_companies_endpoint(background_tasks: BackgroundTasks):
-    """Trigger syncCompanies manual dari admin panel."""
-    background_tasks.add_task(syncCompanies)
-    return {"message": "Sync companies dari GoAPI dimulai di background!", "ts": datetime.now(timezone.utc).isoformat()}
+    # 4. Insert screener_alerts & kirim Telegram
+    for hit in screener_hits[:10]:  # max 10 alert per run
+        indicator_str = " | ".join(hit["indicators"])
+        if supabase:
+            try:
+                supabase.table("screener_alerts").insert({
+                    "ticker":              hit["ticker"],
+                    "price":              hit["price"],
+                    "indicator_triggered": indicator_str,
+                    "timestamp":           datetime.utcnow().isoformat()
+                }).execute()
+            except Exception:
+                pass
+        # Telegram notification
+        msg = (
+            f"🚨 *SCREENER ALERT*\n"
+            f"Ticker: `{hit['ticker']}`\n"
+            f"Harga: Rp {hit['price']:,.0f}\n"
+            f"Volume: {hit['volume']:,}\n"
+            f"Change: {hit['change_pct']:+.2f}%\n"
+            f"Trigger: {indicator_str}"
+        )
+        send_telegram(msg)
 
-@app.post("/api/cron-sync-companies")
-def cron_sync_companies(background_tasks: BackgroundTasks, x_admin_secret: str = Header(...)):
-    """Endpoint untuk scheduler cron setiap 1 jam (0 * * * *)."""
-    if x_admin_secret != ADMIN_SECRET:
-        raise HTTPException(403, "Admin secret salah.")
-    background_tasks.add_task(syncCompanies)
-    return {"message": "Cron sync companies dimulai", "ts": datetime.now(timezone.utc).isoformat()}
+    elapsed = round(time.time() - start_time, 2)
+    summary = (
+        f"fetchGoAPI selesai: {upserted} upserted, "
+        f"{len(screener_hits)} screener hits, {elapsed}s, {errors} errors"
+    )
+    log_api("fetchGoAPI", "SUCCESS" if errors == 0 else "WARNING", summary)
 
-@app.get("/api/admin/goapi-status", dependencies=[Depends(require_admin)])
-def goapi_status_endpoint():
-    """Cek status koneksi GoAPI: ONLINE / OFFLINE."""
-    return goapi_status()
-
-@app.get("/api/admin/scrape-status", dependencies=[Depends(require_admin)])
-def scrape_status():
-    sb = get_supabase()
-    if not sb: return {"count": 0}
-    latest = (sb.table("stocks_data").select("ticker,updated_at")
-                .order("updated_at", desc=True).limit(1).execute())
-    total  = sb.table("stocks_data").select("ticker", count="exact").execute()
     return {
-        "total_in_db":   total.count if hasattr(total, "count") else 0,
-        "latest_update": latest.data[0] if latest.data else None,
+        "status":         "success",
+        "symbols_fetched": len(all_results),
+        "upserted":        upserted,
+        "screener_hits":   len(screener_hits),
+        "chunk_errors":    errors,
+        "elapsed_sec":     elapsed,
+        "hits":            screener_hits[:10]
     }
 
-# ─────────────────────────────────────────
-# ROUTES — ADMIN
-# ─────────────────────────────────────────
-@app.post("/api/admin/upgrade-user", dependencies=[Depends(require_admin)])
-def upgrade_user(req: UpgradeUserReq):
-    sb = get_supabase()
-    if not sb: raise HTTPException(503, "Supabase tidak tersambung")
-    result = sb.table("users").select("*").eq("phone_number", req.phone_number).execute()
-    if not result.data: raise HTTPException(404, f"User {req.phone_number} tidak ditemukan")
-    user = result.data[0]
-    if user.get("status") == "VIP":
-        return {"message": f"{user.get('name','User')} sudah VIP."}
-    sb.table("users").update({"status": "VIP"}).eq("phone_number", req.phone_number).execute()
-    send_telegram(f"🌟 <b>Upgrade VIP!</b>\n👤 {user.get('name','-')}\n📱 {req.phone_number}")
-    return {"message": f"✅ {user.get('name','User')} berhasil diupgrade ke VIP!"}
+# ═══════════════════════════════════════════════════════════════════════════════
+# ROUTES — PAGES
+# ═══════════════════════════════════════════════════════════════════════════════
 
-@app.post("/api/admin/stocks", dependencies=[Depends(require_admin)])
-def upsert_stock(s: StockUpsert):
-    sb = get_supabase()
-    if not sb: raise HTTPException(503, "Supabase tidak tersambung")
-    r = sb.table("stocks_data").upsert({
-        "ticker": s.ticker.upper(), "price": s.price,
-        "volume": s.volume, "updated_at": datetime.now(timezone.utc).isoformat()
-    }).execute()
-    return {"message": f"Saham {s.ticker.upper()} disimpan.", "data": r.data}
+@app.get("/", response_class=HTMLResponse)
+async def index():
+    with open("static/index.html") as f:
+        return f.read()
 
-@app.delete("/api/admin/stocks/{ticker}", dependencies=[Depends(require_admin)])
-def delete_stock(ticker: str):
-    sb = get_supabase()
-    if not sb: raise HTTPException(503, "Supabase tidak tersambung")
-    sb.table("stocks_data").delete().eq("ticker", ticker.upper()).execute()
-    return {"message": f"{ticker.upper()} dihapus."}
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_page():
+    with open("static/admin.html") as f:
+        return f.read()
 
-@app.post("/api/admin/alerts", dependencies=[Depends(require_admin)])
-def create_alert(a: AlertCreate):
-    sb = get_supabase()
-    if not sb: raise HTTPException(503, "Supabase tidak tersambung")
-    r   = sb.table("screener_alerts").insert({
-        "ticker": a.ticker.upper(), "price": a.price,
-        "indicator_triggered": a.indicator_triggered,
-        "timestamp": datetime.now(timezone.utc).isoformat()
-    }).execute()
-    sent = send_telegram(
-        f"🚨 <b>ALERT — {a.ticker.upper()}</b>\n💰 Rp {a.price:,.0f}\n📊 {a.indicator_triggered}",
-        chat_id=a.telegram_chat_id
-    )
-    return {"message": "Alert dibuat", "telegram_sent": sent, "data": r.data}
+@app.get("/pricing", response_class=HTMLResponse)
+async def pricing_page():
+    with open("static/pricing.html") as f:
+        return f.read()
 
-@app.get("/api/admin/users", dependencies=[Depends(require_admin)])
-def list_users():
-    sb = get_supabase()
-    if not sb: return {"data": []}
-    r = sb.table("users").select("*").limit(200).execute()
-    return {"data": r.data}
+# ═══════════════════════════════════════════════════════════════════════════════
+# ROUTES — GOAPI
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/fetch-goapi")
+async def fetch_goapi_endpoint(background_tasks: BackgroundTasks, request: Request):
+    """Trigger GoAPI fetch. Admin only. Runs as background task."""
+    check_admin(request)
+    background_tasks.add_task(run_goapi_fetch)
+    return {"status": "started", "message": "GoAPI fetch berjalan di background (~30-60 detik)"}
+
+@app.get("/api/fetch-goapi-sync")
+async def fetch_goapi_sync(request: Request):
+    """Sync version — tunggu sampai selesai, return hasilnya langsung."""
+    check_admin(request)
+    result = await run_goapi_fetch()
+    return result
+
+@app.post("/api/cron-fetch-goapi")
+async def cron_fetch_goapi(request: Request, background_tasks: BackgroundTasks):
+    """Cron trigger untuk GoAPI fetch."""
+    secret = request.headers.get("X-Admin-Secret", "")
+    if secret != ADMIN_SECRET:
+        raise HTTPException(status_code=403)
+    background_tasks.add_task(run_goapi_fetch)
+    return {"status": "started"}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ROUTES — STOCKS DATA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/stocks")
+async def get_stocks(limit: int = 100, sort: str = "volume"):
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Supabase not connected")
+    try:
+        col = sort if sort in ["price","volume","change_pct","ticker"] else "volume"
+        result = supabase.table("stocks_data").select("*").order(col, desc=True).limit(limit).execute()
+        return {"status": "success", "count": len(result.data), "data": result.data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/stocks/{ticker}")
+async def get_stock(ticker: str):
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Supabase not connected")
+    try:
+        result = supabase.table("stocks_data").select("*").eq("ticker", ticker.upper()).execute()
+        if not result.data:
+            raise HTTPException(status_code=404, detail=f"Ticker {ticker} tidak ditemukan")
+        return {"status": "success", "data": result.data[0]}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ROUTES — SCREENER ALERTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/alerts")
+async def get_alerts(limit: int = 50, request: Request = None):
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Supabase not connected")
+    try:
+        result = supabase.table("screener_alerts").select("*").order("timestamp", desc=True).limit(limit).execute()
+        return {"status": "success", "count": len(result.data), "data": result.data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ROUTES — USERS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/users")
+async def get_users(request: Request):
+    check_admin(request)
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Supabase not connected")
+    try:
+        result = supabase.table("users").select("*").order("created_at", desc=True).execute()
+        return {"status": "success", "count": len(result.data), "data": result.data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/admin/upgrade-user")
+async def upgrade_user(payload: UpgradeUserRequest, request: Request):
+    check_admin(request)
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Supabase not connected")
+    phone = payload.phone_number.strip()
+    try:
+        # Cek user exists
+        existing = supabase.table("users").select("*").eq("phone_number", phone).execute()
+        if existing.data:
+            # Update ke VIP
+            supabase.table("users").update({"status": "VIP"}).eq("phone_number", phone).execute()
+            # Telegram notif
+            send_telegram(
+                f"✅ *USER UPGRADE VIP*\n"
+                f"Phone: `{phone}`\n"
+                f"Nama: {existing.data[0].get('name', '-')}\n"
+                f"Status: Free → *VIP*"
+            )
+            return {"status": "success", "message": f"User {phone} berhasil diupgrade ke VIP"}
+        else:
+            # Insert baru sebagai VIP
+            data = {"phone_number": phone, "status": "VIP"}
+            if payload.name:
+                data["name"] = payload.name
+            supabase.table("users").insert(data).execute()
+            send_telegram(
+                f"✅ *USER BARU VIP*\n"
+                f"Phone: `{phone}`\n"
+                f"Nama: {payload.name or '-'}"
+            )
+            return {"status": "success", "message": f"User {phone} dibuat dan langsung VIP"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/users/register")
+async def register_user(payload: UpgradeUserRequest):
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Supabase not connected")
+    phone = payload.phone_number.strip()
+    try:
+        existing = supabase.table("users").select("id").eq("phone_number", phone).execute()
+        if existing.data:
+            return {"status": "exists", "message": "Nomor sudah terdaftar"}
+        data = {"phone_number": phone, "status": "Free"}
+        if payload.name:
+            data["name"] = payload.name
+        supabase.table("users").insert(data).execute()
+        return {"status": "success", "message": "Pendaftaran berhasil"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ROUTES — COMPANIES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/companies")
+async def get_companies(q: str = "", limit: int = 50, offset: int = 0):
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Supabase not connected")
+    try:
+        query = supabase.table("companies").select("symbol,name,logo,sector")
+        if q:
+            query = query.or_(f"symbol.ilike.%{q}%,name.ilike.%{q}%")
+        result = query.order("symbol").range(offset, offset + limit - 1).execute()
+        return {"status": "success", "count": len(result.data), "data": result.data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ROUTES — ADMIN MISC
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@app.get("/api/admin/logs")
+async def admin_logs(request: Request, limit: int = 50):
+    check_admin(request)
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Supabase not connected")
+    try:
+        result = supabase.table("api_logs").select("*").order("created_at", desc=True).limit(limit).execute()
+        return {"status": "success", "data": result.data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/admin/stats")
+async def admin_stats(request: Request):
+    check_admin(request)
+    if not supabase:
+        return {"supabase": False}
+    try:
+        stocks = supabase.table("stocks_data").select("ticker", count="exact").execute()
+        alerts = supabase.table("screener_alerts").select("id", count="exact").execute()
+        users  = supabase.table("users").select("id", count="exact").execute()
+        vip    = supabase.table("users").select("id", count="exact").eq("status","VIP").execute()
+        # GoAPI health check
+        goapi_ok = False
+        try:
+            r = requests.get(f"{GOAPI_BASE}/stock/idx/index/LQ45/items",
+                           headers=GOAPI_HEADERS, timeout=5)
+            goapi_ok = r.status_code == 200
+        except Exception:
+            pass
+        return {
+            "stocks_tracked": stocks.count,
+            "total_alerts":   alerts.count,
+            "total_users":    users.count,
+            "vip_users":      vip.count,
+            "goapi_status":   "ONLINE" if goapi_ok else "OFFLINE",
+            "supabase":       True
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/api/admin/goapi-status")
+async def goapi_status_check(request: Request):
+    check_admin(request)
+    try:
+        r = requests.get(f"{GOAPI_BASE}/stock/idx/index/LQ45/items",
+                        headers=GOAPI_HEADERS, timeout=8)
+        if r.status_code == 200:
+            d = r.json()
+            cnt = len(d.get("data", {}).get("results", []) or d.get("data", []))
+            return {"status": "ONLINE", "items": cnt, "key_prefix": GOAPI_KEY[:8] + "..."}
+        return {"status": "OFFLINE", "http_code": r.status_code}
+    except Exception as e:
+        return {"status": "OFFLINE", "error": str(e)}
+
+@app.get("/api/health")
+async def health():
+    return {
+        "status": "ok",
+        "version": "5.0",
+        "supabase": supabase is not None,
+        "goapi_key_set": bool(GOAPI_KEY),
+        "telegram_set": bool(TELEGRAM_TOKEN and TELEGRAM_CHAT)
+    }
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CRON COMPAT (lama)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@app.post("/api/cron-scrape")
+async def cron_scrape_compat(request: Request, background_tasks: BackgroundTasks):
+    """Backward compat — sekarang pakai GoAPI, bukan yfinance."""
+    secret = request.headers.get("X-Admin-Secret", "")
+    if secret != ADMIN_SECRET:
+        raise HTTPException(status_code=403)
+    background_tasks.add_task(run_goapi_fetch)
+    return {"status": "started", "note": "Redirected to GoAPI fetch (v5.0)"}
+
+@app.post("/api/cron-sync-companies")
+async def cron_sync_compat(request: Request):
+    """Backward compat endpoint."""
+    secret = request.headers.get("X-Admin-Secret", "")
+    if secret != ADMIN_SECRET:
+        raise HTTPException(status_code=403)
+    return {"status": "ok", "note": "Companies sync via /api/companies, harga via /api/fetch-goapi"}

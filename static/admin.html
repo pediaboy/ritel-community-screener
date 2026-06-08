@@ -1,571 +1,641 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-  <title>Admin CMS — Ritel Community.ID</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-    * { box-sizing:border-box; }
-    body { font-family:'Inter',sans-serif; background:#050510; color:#e2e8f0; margin:0; padding:0; }
-    .neon-text   { color:#7c5cff; }
-    .neon-btn    { background:linear-gradient(135deg,#7c5cff,#a78bfa); border:none; cursor:pointer; transition:all .3s; }
-    .neon-btn:hover { box-shadow:0 0 20px rgba(124,92,255,.6); }
-    .neon-btn:disabled { opacity:.5; cursor:not-allowed; }
-    .danger-btn  { background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.25); color:#f87171; border-radius:8px; padding:5px 12px; font-size:.75rem; cursor:pointer; }
-    .input-field { width:100%; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:10px; padding:12px 14px; color:#fff; font-size:.875rem; outline:none; transition:border-color .2s; }
-    .input-field:focus { border-color:#7c5cff; }
-    .input-field::placeholder { color:#4a5568; }
-    .form-card   { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); border-radius:16px; padding:18px; margin-bottom:14px; }
-    .form-card h3{ font-size:.9rem; font-weight:600; color:#c4b5fd; margin:0 0 14px; display:flex; align-items:center; gap:8px; }
-    .form-stack  { display:flex; flex-direction:column; gap:10px; }
-    .stat-grid   { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
-    .stat-card   { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:14px 12px; text-align:center; }
-    .stat-num    { font-size:1.8rem; font-weight:800; line-height:1; }
-    .stat-lbl    { font-size:.65rem; color:#64748b; margin-top:4px; text-transform:uppercase; letter-spacing:.05em; }
-    .mobile-list { display:flex; flex-direction:column; gap:7px; }
-    .list-item   { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
-    .badge       { display:inline-block; padding:2px 8px; border-radius:20px; font-size:.68rem; font-weight:600; white-space:nowrap; }
-    .badge-vip   { background:rgba(250,204,21,.15); color:#fbbf24; border:1px solid rgba(250,204,21,.3); }
-    .badge-free  { background:rgba(100,116,139,.15); color:#94a3b8; border:1px solid rgba(100,116,139,.2); }
-    .badge-ok    { background:rgba(74,222,128,.15); color:#4ade80; border:1px solid rgba(74,222,128,.3); }
-    .badge-err   { background:rgba(239,68,68,.15); color:#f87171; border:1px solid rgba(239,68,68,.3); }
-    .badge-online{ background:rgba(74,222,128,.15); color:#4ade80; border:1px solid rgba(74,222,128,.3); font-size:.72rem; padding:3px 10px; }
-    .badge-offline{background:rgba(239,68,68,.15); color:#f87171; border:1px solid rgba(239,68,68,.3); font-size:.72rem; padding:3px 10px; }
-    .section-title{ font-size:1.25rem; font-weight:700; color:#fff; margin-bottom:14px; }
-    #bottom-nav  { position:fixed; bottom:0; left:0; right:0; background:rgba(5,5,16,.96); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,.07); z-index:100; padding-bottom:env(safe-area-inset-bottom); }
-    .nav-item    { display:flex; flex-direction:column; align-items:center; padding:9px 0 7px; flex:1; cursor:pointer; color:#64748b; font-size:.58rem; font-weight:500; gap:2px; transition:color .2s; }
-    .nav-item.active { color:#a78bfa; }
-    .nav-item .icon { font-size:1.2rem; line-height:1; }
-    #main-content{ padding:14px 15px 95px; max-width:600px; margin:0 auto; }
-    .toast { position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:999; background:#1e1b4b; border:1px solid #7c5cff; border-radius:12px; padding:11px 18px; color:#c4b5fd; font-size:.82rem; text-align:center; white-space:nowrap; box-shadow:0 8px 32px rgba(0,0,0,.4); transition:opacity .4s; pointer-events:none; }
-    .table-wrap  { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); border-radius:14px; overflow:hidden; }
-    .table-head  { padding:11px 14px; border-bottom:1px solid rgba(255,255,255,.07); display:flex; justify-content:space-between; align-items:center; }
-    .log-item    { padding:10px 14px; border-bottom:1px solid rgba(255,255,255,.04); font-size:.78rem; }
-    .log-item:last-child { border-bottom:none; }
-    .ping-dot    { display:inline-block; width:8px; height:8px; border-radius:50%; background:#4ade80; box-shadow:0 0 6px #4ade80; margin-right:6px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Ritel Community Screener</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          galaxy: { 900:'#0a0a0f', 800:'#10101a', 700:'#1a1a2e', 600:'#16213e', 500:'#0f3460' },
+          neon: { green:'#00ff88', blue:'#00d4ff', purple:'#8b5cf6', red:'#ff4757', yellow:'#ffd700' }
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { background: #0a0a0f; font-family: 'Segoe UI', sans-serif; }
+  .card { background: #10101a; border: 1px solid #1a1a2e; border-radius: 12px; }
+  .tab-btn { cursor:pointer; transition: all 0.2s; }
+  .tab-btn.active { background:#0f3460; color:#00d4ff; border-color:#00d4ff44; }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+  .btn-primary { background:#0f3460; color:#00d4ff; border:1px solid #00d4ff44; }
+  .btn-success { background:#00ff8820; color:#00ff88; border:1px solid #00ff8840; }
+  .btn-danger  { background:#ff475720; color:#ff4757; border:1px solid #ff475740; }
+  .btn-purple  { background:#8b5cf620; color:#8b5cf6; border:1px solid #8b5cf640; }
+  .input-dark  { background:#1a1a2e; border:1px solid #0f3460; color:white; }
+  .input-dark:focus { outline:none; border-color:#00d4ff; }
+  .pulse { animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+  .toast { position:fixed; top:20px; right:20px; z-index:999; padding:12px 20px; border-radius:10px; font-size:14px; font-weight:600; transform:translateY(-20px); opacity:0; transition:all 0.3s; pointer-events:none; }
+  .toast.show { transform:translateY(0); opacity:1; }
+  .toast.success { background:#00ff8822; color:#00ff88; border:1px solid #00ff8860; }
+  .toast.error   { background:#ff475722; color:#ff4757; border:1px solid #ff475760; }
+  ::-webkit-scrollbar { width:4px; }
+  ::-webkit-scrollbar-track { background:#10101a; }
+  ::-webkit-scrollbar-thumb { background:#0f3460; border-radius:2px; }
+</style>
 </head>
-<body>
+<body class="min-h-screen text-gray-100">
 
-<!-- ══ LOGIN ══ -->
-<div id="login-screen" class="min-h-screen flex items-center justify-center px-5">
-  <div class="w-full max-w-sm">
-    <div class="text-center mb-7">
-      <div class="text-5xl mb-3">🔐</div>
-      <h1 class="text-xl font-bold text-white">Admin Login</h1>
-      <p class="text-slate-500 text-xs mt-1">Ritel Community.ID CMS v4</p>
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- HEADER -->
+<header class="sticky top-0 z-40" style="background:#10101a;border-bottom:1px solid #1a1a2e">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a href="/" class="text-gray-500 hover:text-white text-sm">← Dashboard</a>
+      <span class="text-gray-600">|</span>
+      <span class="font-bold text-white">⚙️ Admin Panel</span>
     </div>
-    <div class="form-card">
-      <div class="form-stack">
-        <input id="login-password" type="password" placeholder="Admin secret key" class="input-field"
-               onkeydown="if(event.key==='Enter')doLogin()"/>
-        <button onclick="doLogin()" class="neon-btn w-full text-white py-3 rounded-xl font-semibold text-sm">Masuk →</button>
-        <p id="login-error" class="text-red-400 text-xs text-center hidden">Password salah.</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ DASHBOARD ══ -->
-<div id="admin-dashboard" class="hidden">
-
-  <!-- TOP BAR -->
-  <div style="background:rgba(5,5,16,.96);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.07);padding:12px 15px;position:sticky;top:0;z-index:50;">
-    <div class="flex items-center justify-between" style="max-width:600px;margin:0 auto;">
-      <div>
-        <div class="font-bold text-white text-sm">RITEL COMMUNITY<span class="neon-text">.ID</span></div>
-        <div class="text-slate-500 text-xs">Admin CMS v4</div>
-      </div>
-      <div class="flex items-center gap-3">
-        <span id="goapi-badge" class="badge badge-offline">● OFFLINE</span>
-        <a href="/" class="text-slate-500 text-xs hover:text-slate-300">← Site</a>
-      </div>
+    <div class="flex items-center gap-2">
+      <span id="header-goapi" class="text-xs px-2 py-1 rounded-full" style="background:#1a1a2e">GoAPI: ...</span>
+      <span class="text-xs text-gray-500" id="header-time"></span>
     </div>
   </div>
+</header>
 
-  <!-- CONTENT -->
-  <div id="main-content">
+<main class="max-w-7xl mx-auto px-4 py-6">
 
-    <!-- ── OVERVIEW ── -->
-    <div id="tab-overview" class="tab-panel">
-      <p class="text-slate-400 text-xs mb-3 mt-0.5">Selamat datang, Admin 👋</p>
+  <!-- STATS -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="card p-4 text-center">
+      <div class="text-2xl font-bold text-neon-green" id="s-stocks">—</div>
+      <div class="text-xs text-gray-500 mt-1">Stocks Tracked</div>
+    </div>
+    <div class="card p-4 text-center">
+      <div class="text-2xl font-bold text-neon-blue" id="s-users">—</div>
+      <div class="text-xs text-gray-500 mt-1">Total Users</div>
+    </div>
+    <div class="card p-4 text-center">
+      <div class="text-2xl font-bold" style="color:#ffd700" id="s-vip">—</div>
+      <div class="text-xs text-gray-500 mt-1">VIP Users</div>
+    </div>
+    <div class="card p-4 text-center">
+      <div class="text-2xl font-bold" style="color:#ff4757" id="s-alerts">—</div>
+      <div class="text-xs text-gray-500 mt-1">Screener Alerts</div>
+    </div>
+  </div>
 
-      <div class="stat-grid">
-        <div class="stat-card neon-border" style="border-color:rgba(124,92,255,.3)">
-          <div class="stat-num neon-text" id="stat-users">—</div>
-          <div class="stat-lbl">Total Users</div>
+  <!-- GOAPI CONTROL CARD -->
+  <div class="card p-5 mb-6" style="border-color:#00d4ff22">
+    <div class="flex flex-col md:flex-row md:items-center gap-4">
+      <div class="flex-1">
+        <div class="font-bold text-white mb-1 flex items-center gap-2">
+          🔌 GoAPI Data Fetch
+          <span id="goapi-badge" class="text-xs px-2 py-0.5 rounded-full bg-gray-800 text-gray-400">Mengecek...</span>
         </div>
-        <div class="stat-card" style="border-color:rgba(74,222,128,.3)">
-          <div class="stat-num" style="color:#4ade80" id="stat-vip">—</div>
-          <div class="stat-lbl">VIP Users</div>
-        </div>
-        <div class="stat-card" style="border-color:rgba(251,191,36,.3)">
-          <div class="stat-num" style="color:#fbbf24" id="stat-stocks">—</div>
-          <div class="stat-lbl">Stocks Tracked</div>
-        </div>
-        <div class="stat-card" style="border-color:rgba(96,165,250,.3)">
-          <div class="stat-num" style="color:#60a5fa" id="stat-companies">—</div>
-          <div class="stat-lbl">Total Companies</div>
-        </div>
+        <div class="text-sm text-gray-400">Fetch harga IDX (batch max 50 symbols) dari GoAPI.io & upsert ke Supabase</div>
+        <div id="fetch-status" class="text-xs text-gray-500 mt-1"></div>
       </div>
-
-      <!-- GoAPI Widget -->
-      <div class="form-card" style="margin-bottom:14px">
-        <h3>🌐 GoAPI IDX Status</h3>
-        <div class="flex items-center justify-between mb-3">
-          <div>
-            <div id="goapi-status-text" class="text-white text-sm font-semibold">Mengecek...</div>
-            <div id="goapi-last-sync" class="text-slate-500 text-xs mt-0.5">Last sync: —</div>
-          </div>
-          <span id="goapi-status-badge" class="badge badge-offline">OFFLINE</span>
-        </div>
-        <div class="flex gap-2">
-          <button onclick="checkGoApiStatus()" class="flex-1 text-white py-2 rounded-xl font-medium text-xs" style="background:rgba(124,92,255,.2);border:1px solid rgba(124,92,255,.3);">
-            🔄 Cek Status
-          </button>
-          <button onclick="syncCompanies()" id="btn-sync" class="flex-1 neon-btn text-white py-2 rounded-xl font-medium text-xs">
-            📥 Sync Companies
-          </button>
-        </div>
-        <div id="sync-result" class="text-slate-500 text-xs mt-2 hidden"></div>
-      </div>
-
-      <!-- Stock Scraper -->
-      <div class="form-card">
-        <h3>⚡ Scraping Harga Saham</h3>
-        <p class="text-slate-400 text-xs mb-3">Ambil harga terbaru seluruh saham IDX via yfinance. ~2-3 menit.</p>
-        <button onclick="forceScrape()" id="btn-scrape" class="neon-btn w-full text-white py-3 rounded-xl font-semibold text-sm">
-          ⚡ Force Scrape Sekarang
+      <div class="flex flex-col sm:flex-row gap-2">
+        <button onclick="checkGoAPI()" class="btn-primary px-4 py-2 rounded-lg text-sm font-semibold">
+          🔍 Cek Status
         </button>
-        <div id="scrape-msg" class="text-slate-500 text-xs text-center mt-2 hidden"></div>
-      </div>
-
-      <!-- DB Status -->
-      <div class="form-card">
-        <h3>🗄️ Database Status</h3>
-        <div id="db-status" class="text-slate-400 text-sm">Memuat...</div>
+        <button onclick="triggerFetch()" id="btn-fetch" class="btn-success px-4 py-2 rounded-lg text-sm font-semibold">
+          ⚡ Force Fetch GoAPI
+        </button>
       </div>
     </div>
+    <!-- Progress -->
+    <div id="fetch-progress" class="hidden mt-4 p-3 rounded-lg" style="background:#001a0a;border:1px solid #00ff8830">
+      <div class="flex items-center gap-2 text-neon-green text-sm">
+        <span class="pulse">⏳</span>
+        <span id="fetch-progress-text">Fetching dari GoAPI... (batching max 50 symbols per request)</span>
+      </div>
+      <div class="mt-2 h-1 rounded-full" style="background:#1a2e1a">
+        <div class="h-1 rounded-full pulse" style="background:#00ff88;width:60%"></div>
+      </div>
+    </div>
+  </div>
 
-    <!-- ── COMPANIES ── -->
-    <div id="tab-companies" class="tab-panel hidden">
-      <div class="section-title">🏢 Companies IDX</div>
+  <!-- TABS -->
+  <div class="flex gap-2 mb-4 overflow-x-auto pb-1">
+    <button class="tab-btn active px-4 py-2 rounded-lg text-sm font-semibold border border-transparent" onclick="switchTab('overview')">📊 Overview</button>
+    <button class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold border border-transparent text-gray-400" onclick="switchTab('users')">👥 Users</button>
+    <button class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold border border-transparent text-gray-400" onclick="switchTab('stocks')">📈 Stocks</button>
+    <button class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold border border-transparent text-gray-400" onclick="switchTab('alerts')">🚨 Alerts</button>
+    <button class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold border border-transparent text-gray-400" onclick="switchTab('logs')">📋 Logs</button>
+  </div>
 
-      <div class="form-card">
-        <div class="form-stack">
-          <input id="co-search" type="text" placeholder="🔍 Cari ticker atau nama perusahaan..." class="input-field"
-                 oninput="debounceSearch()" />
-          <div class="flex gap-2 items-center">
-            <span class="text-slate-400 text-xs" id="co-count">Total: —</span>
-            <button onclick="syncCompanies()" class="text-xs text-purple-400 hover:text-purple-300 ml-auto">↻ Refresh</button>
+  <!-- TAB: OVERVIEW -->
+  <div class="tab-content active" id="tab-overview">
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="card p-5">
+        <h3 class="font-bold text-white mb-4">👑 Upgrade User ke VIP</h3>
+        <div class="space-y-3">
+          <div>
+            <label class="text-xs text-gray-400 block mb-1">Nomor HP (format: 08xx atau +628xx)</label>
+            <input type="text" id="upgrade-phone" placeholder="Contoh: 081234567890"
+              class="input-dark w-full px-4 py-2.5 rounded-lg text-sm">
+          </div>
+          <div>
+            <label class="text-xs text-gray-400 block mb-1">Nama (opsional)</label>
+            <input type="text" id="upgrade-name" placeholder="Nama user"
+              class="input-dark w-full px-4 py-2.5 rounded-lg text-sm">
+          </div>
+          <button onclick="upgradeUser()" id="btn-upgrade"
+            class="w-full py-2.5 rounded-lg font-bold text-sm"
+            style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);color:white">
+            👑 Upgrade ke VIP
+          </button>
+          <div id="upgrade-result" class="hidden text-sm p-3 rounded-lg text-center"></div>
+        </div>
+      </div>
+      <div class="card p-5">
+        <h3 class="font-bold text-white mb-4">📊 Quick Stats</h3>
+        <div class="space-y-3">
+          <div class="flex justify-between items-center py-2" style="border-bottom:1px solid #1a1a2e">
+            <span class="text-sm text-gray-400">Stocks Tracked</span>
+            <span class="font-bold text-white" id="qs-stocks">—</span>
+          </div>
+          <div class="flex justify-between items-center py-2" style="border-bottom:1px solid #1a1a2e">
+            <span class="text-sm text-gray-400">Total Users</span>
+            <span class="font-bold text-white" id="qs-users">—</span>
+          </div>
+          <div class="flex justify-between items-center py-2" style="border-bottom:1px solid #1a1a2e">
+            <span class="text-sm text-gray-400">VIP Members</span>
+            <span class="font-bold" style="color:#ffd700" id="qs-vip">—</span>
+          </div>
+          <div class="flex justify-between items-center py-2" style="border-bottom:1px solid #1a1a2e">
+            <span class="text-sm text-gray-400">Total Alerts</span>
+            <span class="font-bold" style="color:#ff4757" id="qs-alerts">—</span>
+          </div>
+          <div class="flex justify-between items-center py-2">
+            <span class="text-sm text-gray-400">GoAPI Status</span>
+            <span class="font-bold" id="qs-goapi">—</span>
           </div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <div class="table-wrap">
-        <div class="table-head">
-          <span class="text-sm font-semibold text-white">Daftar Perusahaan</span>
-          <div class="flex gap-2">
-            <button onclick="coPage--; loadCompanies()" id="btn-prev" class="text-slate-400 text-xs px-2 py-1 rounded" style="background:rgba(255,255,255,.05)">‹</button>
-            <span id="co-page-info" class="text-slate-500 text-xs self-center px-1">—</span>
-            <button onclick="coPage++; loadCompanies()" id="btn-next" class="text-slate-400 text-xs px-2 py-1 rounded" style="background:rgba(255,255,255,.05)">›</button>
-          </div>
-        </div>
-        <div id="companies-list" class="p-3">
-          <p class="text-slate-500 text-sm text-center py-6">Loading...</p>
-        </div>
+  <!-- TAB: USERS -->
+  <div class="tab-content" id="tab-users">
+    <div class="card overflow-hidden">
+      <div class="p-4 flex justify-between items-center" style="border-bottom:1px solid #1a1a2e">
+        <h3 class="font-bold text-white">👥 Daftar Users</h3>
+        <button onclick="loadUsers()" class="btn-primary px-3 py-1.5 rounded-lg text-xs">↻ Refresh</button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead><tr style="background:#0a0a0f;color:#6b7280;font-size:11px">
+            <th class="px-4 py-3 text-left">PHONE</th>
+            <th class="px-4 py-3 text-left">NAMA</th>
+            <th class="px-4 py-3 text-center">STATUS</th>
+            <th class="px-4 py-3 text-right">AKSI</th>
+          </tr></thead>
+          <tbody id="users-table">
+            <tr><td colspan="4" class="text-center py-8 text-gray-500 pulse">Memuat users...</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
+  </div>
 
-    <!-- ── USERS ── -->
-    <div id="tab-users" class="tab-panel hidden">
-      <div class="section-title">👥 User Management</div>
-      <div class="form-card">
-        <h3>⬆️ Upgrade ke VIP</h3>
-        <div class="form-stack">
-          <input id="upgrade-phone" type="tel" placeholder="Nomor HP (cth: 08123456789)" class="input-field"/>
-          <button onclick="upgradeUser()" class="neon-btn w-full text-white py-3 rounded-xl font-semibold text-sm">Upgrade ke VIP</button>
+  <!-- TAB: STOCKS -->
+  <div class="tab-content" id="tab-stocks">
+    <div class="card overflow-hidden">
+      <div class="p-4 flex justify-between items-center" style="border-bottom:1px solid #1a1a2e">
+        <h3 class="font-bold text-white">📈 Stocks Data (GoAPI)</h3>
+        <div class="flex gap-2">
+          <input id="stock-search" type="text" placeholder="Cari ticker..."
+            class="input-dark px-3 py-1.5 text-xs rounded-lg w-28"
+            oninput="filterStocksAdmin(this.value)">
+          <button onclick="loadStocksAdmin()" class="btn-primary px-3 py-1.5 rounded-lg text-xs">↻ Refresh</button>
         </div>
       </div>
-      <div class="table-wrap">
-        <div class="table-head"><span class="text-sm font-semibold text-white">Daftar User</span></div>
-        <div id="users-list" class="p-3"><p class="text-slate-500 text-sm text-center py-6">Loading...</p></div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead><tr style="background:#0a0a0f;color:#6b7280;font-size:11px">
+            <th class="px-4 py-3 text-left">TICKER</th>
+            <th class="px-4 py-3 text-right">HARGA</th>
+            <th class="px-4 py-3 text-right">CHANGE %</th>
+            <th class="px-4 py-3 text-right">VOLUME</th>
+            <th class="px-4 py-3 text-right">UPDATE</th>
+          </tr></thead>
+          <tbody id="stocks-admin-table">
+            <tr><td colspan="5" class="text-center py-8 text-gray-500 pulse">Memuat data...</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
+  </div>
 
-    <!-- ── STOCKS ── -->
-    <div id="tab-stocks" class="tab-panel hidden">
-      <div class="section-title">📈 Stock Management</div>
-      <div class="form-card">
-        <h3>➕ Tambah / Edit Saham</h3>
-        <div class="form-stack">
-          <input id="s-ticker" type="text" placeholder="Ticker (cth: BBRI)" class="input-field" style="text-transform:uppercase"/>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <input id="s-price" type="number" placeholder="Harga (Rp)" class="input-field"/>
-            <input id="s-volume" type="number" placeholder="Volume" class="input-field"/>
-          </div>
-          <button onclick="upsertStock()" class="neon-btn w-full text-white py-3 rounded-xl font-semibold text-sm">💾 Simpan Saham</button>
-        </div>
+  <!-- TAB: ALERTS -->
+  <div class="tab-content" id="tab-alerts">
+    <div class="card overflow-hidden">
+      <div class="p-4 flex justify-between items-center" style="border-bottom:1px solid #1a1a2e">
+        <h3 class="font-bold text-white">🚨 Screener Alerts</h3>
+        <button onclick="loadAlerts()" class="btn-primary px-3 py-1.5 rounded-lg text-xs">↻ Refresh</button>
       </div>
-      <div class="table-wrap">
-        <div class="table-head"><span class="text-sm font-semibold text-white">Data Saham (Top 30 Volume)</span></div>
-        <div id="stocks-list" class="p-3"><p class="text-slate-500 text-sm text-center py-6">Loading...</p></div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead><tr style="background:#0a0a0f;color:#6b7280;font-size:11px">
+            <th class="px-4 py-3 text-left">TICKER</th>
+            <th class="px-4 py-3 text-right">HARGA</th>
+            <th class="px-4 py-3 text-left">INDIKATOR</th>
+            <th class="px-4 py-3 text-right">WAKTU</th>
+          </tr></thead>
+          <tbody id="alerts-table">
+            <tr><td colspan="4" class="text-center py-8 text-gray-500 pulse">Memuat alerts...</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
+  </div>
 
-    <!-- ── ALERTS ── -->
-    <div id="tab-alerts" class="tab-panel hidden">
-      <div class="section-title">🚨 Manual Alert</div>
-      <div class="form-card">
-        <h3>📢 Kirim Alert Telegram</h3>
-        <div class="form-stack">
-          <input id="a-ticker" type="text" placeholder="Ticker (cth: AMMN)" class="input-field" style="text-transform:uppercase"/>
-          <input id="a-price" type="number" placeholder="Harga saat ini (Rp)" class="input-field"/>
-          <input id="a-indicator" type="text" placeholder="Indikator (cth: MA20 Golden Cross)" class="input-field"/>
-          <input id="a-chatid" type="text" placeholder="Telegram Chat ID (opsional)" class="input-field"/>
-          <button onclick="createAlert()" class="neon-btn w-full text-white py-3 rounded-xl font-semibold text-sm">🚀 Kirim Alert</button>
-        </div>
+  <!-- TAB: LOGS -->
+  <div class="tab-content" id="tab-logs">
+    <div class="card overflow-hidden">
+      <div class="p-4 flex justify-between items-center" style="border-bottom:1px solid #1a1a2e">
+        <h3 class="font-bold text-white">📋 API Logs</h3>
+        <button onclick="loadLogs()" class="btn-primary px-3 py-1.5 rounded-lg text-xs">↻ Refresh</button>
       </div>
-      <div class="table-wrap">
-        <div class="table-head"><span class="text-sm font-semibold text-white">Alert Terbaru</span></div>
-        <div id="alerts-list" class="p-3"><p class="text-slate-500 text-sm text-center py-6">Loading...</p></div>
-      </div>
-
-      <!-- API Logs -->
-      <div class="section-title mt-4">📋 API Logs</div>
-      <div class="table-wrap">
-        <div class="table-head">
-          <span class="text-sm font-semibold text-white">Log Terbaru</span>
-          <button onclick="loadLogs()" class="text-xs text-purple-400">↻ Refresh</button>
-        </div>
-        <div id="logs-list"><p class="text-slate-500 text-sm text-center py-6 px-4">Loading...</p></div>
+      <div id="logs-list" class="p-4 space-y-2 max-h-96 overflow-y-auto">
+        <div class="text-gray-500 text-sm pulse">Memuat logs...</div>
       </div>
     </div>
+  </div>
 
-  </div><!-- end main-content -->
+</main>
 
-  <!-- ══ BOTTOM NAV ══ -->
-  <nav id="bottom-nav">
-    <div style="display:flex;">
-      <div class="nav-item active" onclick="showTab('overview')" id="nav-overview">
-        <span class="icon">📊</span><span>Overview</span>
-      </div>
-      <div class="nav-item" onclick="showTab('companies')" id="nav-companies">
-        <span class="icon">🏢</span><span>Companies</span>
-      </div>
-      <div class="nav-item" onclick="showTab('users')" id="nav-users">
-        <span class="icon">👥</span><span>Users</span>
-      </div>
-      <div class="nav-item" onclick="showTab('stocks')" id="nav-stocks">
-        <span class="icon">📈</span><span>Stocks</span>
-      </div>
-      <div class="nav-item" onclick="showTab('alerts')" id="nav-alerts">
-        <span class="icon">🚨</span><span>Alerts</span>
-      </div>
-    </div>
-  </nav>
-</div>
-
-<div id="toast" class="toast hidden"></div>
+<!-- BOTTOM NAV -->
+<nav class="fixed bottom-0 left-0 right-0 md:hidden" style="background:#10101a;border-top:1px solid #1a1a2e">
+  <div class="flex">
+    <a href="/" class="flex-1 flex flex-col items-center py-3 text-gray-500">
+      <span class="text-lg">📊</span>
+      <span class="text-xs mt-1">Screener</span>
+    </a>
+    <a href="/pricing" class="flex-1 flex flex-col items-center py-3 text-gray-500">
+      <span class="text-lg">👑</span>
+      <span class="text-xs mt-1">VIP</span>
+    </a>
+    <a href="/admin" class="flex-1 flex flex-col items-center py-3 text-neon-blue">
+      <span class="text-lg">⚙️</span>
+      <span class="text-xs mt-1">Admin</span>
+    </a>
+  </div>
+</nav>
+<div class="md:hidden h-16"></div>
 
 <script>
-let ADMIN_SECRET = '';
-let coPage = 0;
-const CO_LIMIT = 20;
-let coTotal = 0;
-let coSearch = '';
-let searchTimer = null;
+const ADMIN_SECRET = 'pedia123';
+let allStocksAdmin = [];
 
-// ── LOGIN ──
-function doLogin() {
-  const pw = document.getElementById('login-password').value.trim();
-  if (!pw) return;
-  ADMIN_SECRET = pw;
-  document.getElementById('login-screen').classList.add('hidden');
-  document.getElementById('admin-dashboard').classList.remove('hidden');
-  initDashboard();
-}
-
-function initDashboard() {
-  loadOverview();
-  loadUsers();
-  loadStocks();
-  loadAlerts();
-  loadLogs();
-  checkGoApiStatus();
-}
-
-// ── TABS ──
-function showTab(name) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.remove('hidden');
-  document.getElementById('nav-' + name).classList.add('active');
-  if (name === 'companies') loadCompanies();
-  window.scrollTo(0, 0);
-}
-
-// ── TOAST ──
-function showToast(msg, err=false) {
+// ── TOAST ──────────────────────────────────────────────
+function showToast(msg, type='success') {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.style.background = err ? '#2d1515' : '#1e1b4b';
-  t.style.borderColor = err ? '#ef4444' : '#7c5cff';
-  t.style.color = err ? '#fca5a5' : '#c4b5fd';
-  t.classList.remove('hidden');
-  setTimeout(() => t.classList.add('hidden'), 3000);
+  t.className = `toast ${type} show`;
+  setTimeout(() => { t.className = 'toast'; }, 3500);
 }
 
-// ── API HELPER ──
-async function api(method, path, body=null) {
-  const opts = { method, headers: {'Content-Type':'application/json','x-admin-secret':ADMIN_SECRET} };
-  if (body) opts.body = JSON.stringify(body);
-  const r = await fetch(path, opts);
-  return r.json();
+// ── TIME ───────────────────────────────────────────────
+function updateTime() {
+  const now = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('header-time').textContent = now + ' WIB';
+}
+updateTime(); setInterval(updateTime, 60000);
+
+// ── TABS ───────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'users') loadUsers();
+  if (name === 'stocks') loadStocksAdmin();
+  if (name === 'alerts') loadAlerts();
+  if (name === 'logs') loadLogs();
 }
 
-// ── OVERVIEW ──
-async function loadOverview() {
+// ── GOAPI ──────────────────────────────────────────────
+async function checkGoAPI() {
   try {
-    const [users, stocks, alerts, coStatus] = await Promise.all([
-      api('GET','/api/admin/users'),
-      api('GET','/api/stocks'),
-      api('GET','/api/alerts'),
-      fetch('/api/companies/sync-status').then(r=>r.json()),
-    ]);
-    const allU = users.data || [];
-    document.getElementById('stat-users').textContent    = allU.length;
-    document.getElementById('stat-vip').textContent      = allU.filter(u=>u.status==='VIP').length;
-    document.getElementById('stat-stocks').textContent   = (stocks.data||[]).length;
-    document.getElementById('stat-companies').textContent= coStatus.total || 0;
-
-    // Last sync
-    if (coStatus.last_sync) {
-      const dt = new Date(coStatus.last_sync);
-      document.getElementById('goapi-last-sync').textContent =
-        'Last sync: ' + dt.toLocaleString('id-ID');
-    }
-
-    // DB status
-    const st = document.getElementById('db-status');
-    const s0 = (stocks.data||[])[0];
-    if (s0) {
-      const dt = new Date(s0.updated_at + (s0.updated_at.endsWith('Z')?'':'Z'));
-      st.innerHTML = `<span class="text-green-400">● Online</span> &nbsp;·&nbsp; <b>${(stocks.data||[]).length}</b> saham &nbsp;·&nbsp; Update: ${dt.toLocaleString('id-ID')} &nbsp;·&nbsp; <b>${coStatus.total||0}</b> companies terdaftar`;
+    const r = await fetch('/api/admin/goapi-status', {
+      headers: {'X-Admin-Secret': ADMIN_SECRET}
+    });
+    const d = await r.json();
+    const online = d.status === 'ONLINE';
+    const badge = document.getElementById('goapi-badge');
+    const headerBadge = document.getElementById('header-goapi');
+    const qsGoapi = document.getElementById('qs-goapi');
+    if (online) {
+      badge.className = 'text-xs px-2 py-0.5 rounded-full';
+      badge.style.cssText = 'background:#00ff8822;color:#00ff88;border:1px solid #00ff8840';
+      badge.textContent = '✅ ONLINE';
+      if(headerBadge) { headerBadge.style.cssText='background:#00ff8815;color:#00ff88'; headerBadge.textContent='GoAPI: ONLINE'; }
+      if(qsGoapi) { qsGoapi.style.color='#00ff88'; qsGoapi.textContent='🟢 ONLINE'; }
     } else {
-      st.innerHTML = '<span class="text-yellow-400">⚠ Belum ada data.</span> Jalankan Force Scrape & Sync Companies.';
+      badge.className = 'text-xs px-2 py-0.5 rounded-full';
+      badge.style.cssText = 'background:#ff475722;color:#ff4757;border:1px solid #ff475740';
+      badge.textContent = '❌ OFFLINE';
+      if(headerBadge) { headerBadge.style.cssText='background:#ff475715;color:#ff4757'; headerBadge.textContent='GoAPI: OFFLINE'; }
+      if(qsGoapi) { qsGoapi.style.color='#ff4757'; qsGoapi.textContent='🔴 OFFLINE'; }
     }
-  } catch(e) { console.error(e); }
-}
-
-// ── GOAPI STATUS ──
-async function checkGoApiStatus() {
-  const badge    = document.getElementById('goapi-badge');
-  const badge2   = document.getElementById('goapi-status-badge');
-  const statusTx = document.getElementById('goapi-status-text');
-  try {
-    const r = await api('GET', '/api/admin/goapi-status');
-    const online = r.online;
-    const cls    = online ? 'badge-online' : 'badge-offline';
-    const lbl    = online ? '● ONLINE' : '● OFFLINE';
-    badge.className  = 'badge ' + cls;
-    badge2.className = 'badge ' + cls;
-    badge.textContent = badge2.textContent = lbl;
-    statusTx.textContent = online ? 'GoAPI IDX aktif dan merespons ✓' : 'GoAPI tidak dapat dihubungi ✗';
-    statusTx.style.color = online ? '#4ade80' : '#f87171';
   } catch(e) {
-    badge.textContent = badge2.textContent = '● ERROR';
-    statusTx.textContent = 'Gagal cek status';
+    showToast('Gagal cek GoAPI: ' + e.message, 'error');
   }
 }
 
-// ── SYNC COMPANIES ──
-async function syncCompanies() {
-  const btn = document.getElementById('btn-sync');
-  const res = document.getElementById('sync-result');
-  btn.disabled = true; btn.textContent = '⏳ Syncing...';
-  res.classList.remove('hidden');
-  res.textContent = 'Sync dari GoAPI berjalan di background...';
+// ── FORCE FETCH GoAPI ──────────────────────────────────
+async function triggerFetch() {
+  const btn = document.getElementById('btn-fetch');
+  const progress = document.getElementById('fetch-progress');
+  const progressText = document.getElementById('fetch-progress-text');
+  const statusEl = document.getElementById('fetch-status');
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Fetching...';
+  btn.style.opacity = '0.7';
+  progress.classList.remove('hidden');
+  progressText.textContent = 'Fetching dari GoAPI... (batching max 50 symbols per request)';
+
+  const steps = [
+    'Ambil daftar LQ45 dari GoAPI...',
+    'Batch symbols jadi chunk 50...',
+    'Fetch harga per chunk...',
+    'Compute indicators (MA20, MACD)...',
+    'Upsert ke Supabase stocks_data...',
+    'Cek screener alerts...',
+    'Kirim Telegram jika ada hit...',
+    'Selesai! Data tersimpan ✅'
+  ];
+
+  let stepIdx = 0;
+  const stepInterval = setInterval(() => {
+    if (stepIdx < steps.length - 1) {
+      progressText.textContent = steps[stepIdx++];
+    }
+  }, 4000);
+
   try {
-    const r = await api('POST', '/api/admin/sync-companies');
-    showToast('✅ ' + r.message);
-    res.textContent = '✅ ' + r.message;
-    setTimeout(loadOverview, 3000);
+    // Gunakan sync endpoint agar dapat hasilnya langsung
+    const r = await fetch('/api/fetch-goapi-sync', {
+      headers: {'X-Admin-Secret': ADMIN_SECRET}
+    });
+    const d = await r.json();
+    clearInterval(stepInterval);
+
+    if (d.status === 'success') {
+      progressText.textContent = steps[steps.length - 1];
+      statusEl.textContent = `✅ Berhasil: ${d.symbols_fetched} symbols, ${d.upserted} upserted, ${d.screener_hits} hits (${d.elapsed_sec}s)`;
+      statusEl.style.color = '#00ff88';
+      showToast(`✅ Fetch selesai: ${d.upserted} data disimpan, ${d.screener_hits} screener hits`, 'success');
+      // Reload stats
+      setTimeout(() => { loadStats(); loadStocksAdmin(); }, 1000);
+    } else {
+      progressText.textContent = '❌ Fetch gagal: ' + (d.message || 'Unknown error');
+      statusEl.textContent = '❌ ' + (d.message || 'Error');
+      statusEl.style.color = '#ff4757';
+      showToast('❌ Fetch gagal: ' + (d.message || 'Error'), 'error');
+    }
   } catch(e) {
-    showToast('❌ Sync gagal', true);
-    res.textContent = '❌ Gagal: ' + e.message;
+    clearInterval(stepInterval);
+    progressText.textContent = '❌ Error: ' + e.message;
+    statusEl.textContent = '❌ Error: ' + e.message;
+    statusEl.style.color = '#ff4757';
+    showToast('❌ Error: ' + e.message, 'error');
+  } finally {
+    setTimeout(() => { progress.classList.add('hidden'); }, 5000);
+    btn.disabled = false;
+    btn.textContent = '⚡ Force Fetch GoAPI';
+    btn.style.opacity = '1';
   }
-  btn.disabled = false; btn.textContent = '📥 Sync Companies';
 }
 
-// ── FORCE SCRAPE ──
-async function forceScrape() {
-  const btn = document.getElementById('btn-scrape');
-  const msg = document.getElementById('scrape-msg');
-  btn.disabled = true; btn.textContent = '⏳ Memulai...';
-  msg.classList.remove('hidden'); msg.textContent = 'Scraping berjalan di background (~2-3 menit)...';
+// ── STATS ──────────────────────────────────────────────
+async function loadStats() {
   try {
-    const r = await api('POST', '/api/admin/force-scrape');
-    showToast('✅ ' + (r.message || 'Scrape dimulai!'));
-    msg.textContent = '✅ ' + (r.message || 'Scrape dimulai!');
-  } catch(e) { showToast('❌ Gagal scrape', true); }
-  btn.disabled = false; btn.textContent = '⚡ Force Scrape Sekarang';
+    const r = await fetch('/api/admin/stats', {
+      headers: {'X-Admin-Secret': ADMIN_SECRET}
+    });
+    const d = await r.json();
+    const set = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val??'—'; };
+    set('s-stocks',  d.stocks_tracked);
+    set('s-users',   d.total_users);
+    set('s-vip',     d.vip_users);
+    set('s-alerts',  d.total_alerts);
+    set('qs-stocks', d.stocks_tracked);
+    set('qs-users',  d.total_users);
+    set('qs-vip',    d.vip_users);
+    set('qs-alerts', d.total_alerts);
+  } catch(e) {}
 }
 
-// ── COMPANIES ──
-function debounceSearch() {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => {
-    coSearch = document.getElementById('co-search').value.trim();
-    coPage   = 0;
-    loadCompanies();
-  }, 400);
-}
+// ── UPGRADE USER ───────────────────────────────────────
+async function upgradeUser() {
+  const phone = document.getElementById('upgrade-phone').value.trim();
+  const name  = document.getElementById('upgrade-name').value.trim();
+  const resultEl = document.getElementById('upgrade-result');
+  const btn = document.getElementById('btn-upgrade');
 
-async function loadCompanies() {
-  const list = document.getElementById('companies-list');
-  list.innerHTML = '<p class="text-slate-500 text-sm text-center py-6">Loading...</p>';
-  document.getElementById('btn-prev').disabled = coPage <= 0;
+  if (!phone) {
+    showToast('⚠️ Masukkan nomor HP dulu!', 'error');
+    return;
+  }
 
-  const offset = coPage * CO_LIMIT;
-  const url    = `/api/companies?limit=${CO_LIMIT}&offset=${offset}&search=${encodeURIComponent(coSearch)}`;
+  btn.disabled = true;
+  btn.textContent = '⏳ Memproses...';
+
   try {
-    const r = await fetch(url).then(x=>x.json());
-    const items = r.data || [];
-    coTotal = r.total || 0;
-    document.getElementById('co-count').textContent = `Total: ${coTotal} perusahaan`;
-    const totalPages = Math.ceil(coTotal / CO_LIMIT);
-    document.getElementById('co-page-info').textContent = `${coPage+1}/${totalPages||1}`;
-    document.getElementById('btn-next').disabled = (coPage + 1) >= totalPages;
+    const r = await fetch('/api/admin/upgrade-user', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Admin-Secret': ADMIN_SECRET
+      },
+      body: JSON.stringify({ phone_number: phone, name: name || null })
+    });
 
-    if (!items.length) {
-      list.innerHTML = '<p class="text-slate-500 text-sm text-center py-6">Tidak ada data. Coba sync terlebih dahulu.</p>';
+    const d = await r.json();
+
+    resultEl.classList.remove('hidden');
+    if (r.ok && d.status === 'success') {
+      resultEl.style.cssText = 'background:#00ff8815;color:#00ff88;border:1px solid #00ff8840;display:block';
+      resultEl.textContent = '✅ ' + d.message;
+      showToast('✅ ' + d.message, 'success');
+      document.getElementById('upgrade-phone').value = '';
+      document.getElementById('upgrade-name').value = '';
+      loadStats();
+      // Reload users table jika tab aktif
+      if (document.getElementById('tab-users').classList.contains('active')) loadUsers();
+    } else {
+      resultEl.style.cssText = 'background:#ff475715;color:#ff4757;border:1px solid #ff475740;display:block';
+      resultEl.textContent = '❌ ' + (d.detail || d.message || 'Gagal upgrade');
+      showToast('❌ ' + (d.detail || 'Gagal upgrade'), 'error');
+    }
+  } catch(e) {
+    resultEl.classList.remove('hidden');
+    resultEl.style.cssText = 'background:#ff475715;color:#ff4757;border:1px solid #ff475740;display:block';
+    resultEl.textContent = '❌ Error: ' + e.message;
+    showToast('❌ Network error: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '👑 Upgrade ke VIP';
+    setTimeout(() => { resultEl.classList.add('hidden'); }, 5000);
+  }
+}
+
+// ── USERS ──────────────────────────────────────────────
+async function loadUsers() {
+  const tbody = document.getElementById('users-table');
+  tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-500 pulse">Memuat...</td></tr>';
+  try {
+    const r = await fetch('/api/users', { headers: {'X-Admin-Secret': ADMIN_SECRET} });
+    const d = await r.json();
+    const users = d.data || [];
+    if (!users.length) {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-500">Belum ada user</td></tr>';
       return;
     }
-    list.innerHTML = '<div class="mobile-list">' + items.map(c => `
-      <div class="list-item">
-        <div class="flex items-center gap-3">
-          ${c.logo ? `<img src="${c.logo}" class="w-7 h-7 rounded-full object-cover" onerror="this.style.display='none'" />` : '<div class="w-7 h-7 rounded-full bg-purple-900 flex items-center justify-center text-xs text-purple-300">${c.symbol[0]}</div>'}
-          <div>
-            <div class="text-white text-sm font-semibold">${c.symbol}</div>
-            <div class="text-slate-400 text-xs">${c.name || '—'}</div>
-          </div>
-        </div>
-        ${c.sector ? `<span class="badge badge-free">${c.sector}</span>` : ''}
-      </div>
-    `).join('') + '</div>';
+    tbody.innerHTML = users.map(u => `
+      <tr class="border-t" style="border-color:#1a1a2e">
+        <td class="px-4 py-3 text-white font-mono text-sm">${u.phone_number||'—'}</td>
+        <td class="px-4 py-3 text-gray-300">${u.name||'—'}</td>
+        <td class="px-4 py-3 text-center">
+          ${u.status==='VIP'
+            ? '<span style="background:#ffd70022;color:#ffd700;border:1px solid #ffd70040" class="px-2 py-0.5 rounded-full text-xs font-bold">👑 VIP</span>'
+            : '<span style="background:#1a1a2e;color:#6b7280;border:1px solid #374151" class="px-2 py-0.5 rounded-full text-xs">Free</span>'}
+        </td>
+        <td class="px-4 py-3 text-right">
+          ${u.status!=='VIP' ? `<button onclick="quickUpgrade('${u.phone_number}')"
+            class="text-xs px-3 py-1 rounded-lg btn-purple">Upgrade VIP</button>` : ''}
+        </td>
+      </tr>
+    `).join('');
   } catch(e) {
-    list.innerHTML = '<p class="text-red-400 text-xs text-center py-6">Error: ' + e.message + '</p>';
+    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-red-400">Error: ${e.message}</td></tr>`;
   }
 }
 
-// ── USERS ──
-async function loadUsers() {
-  const r   = await api('GET','/api/admin/users');
-  const list= document.getElementById('users-list');
-  const us  = r.data || [];
-  if (!us.length) { list.innerHTML='<p class="text-slate-500 text-sm text-center py-6">Belum ada user.</p>'; return; }
-  list.innerHTML = '<div class="mobile-list p-0">' + us.map(u=>`
-    <div class="list-item">
-      <div><div class="text-white text-sm font-medium">${u.name||'—'}</div>
-      <div class="text-slate-400 text-xs">${u.phone_number||'—'}</div></div>
-      <span class="badge ${u.status==='VIP'?'badge-vip':'badge-free'}">${u.status||'Free'}</span>
-    </div>`).join('') + '</div>';
-}
-async function upgradeUser() {
-  const ph = document.getElementById('upgrade-phone').value.trim();
-  if (!ph) return showToast('Masukkan nomor HP',true);
+async function quickUpgrade(phone) {
   try {
-    const r = await api('POST','/api/admin/upgrade-user',{phone_number:ph});
-    showToast('✅ '+r.message);
-    document.getElementById('upgrade-phone').value='';
-    loadUsers();
-  } catch(e) { showToast('❌ Gagal',true); }
+    const r = await fetch('/api/admin/upgrade-user', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'X-Admin-Secret': ADMIN_SECRET },
+      body: JSON.stringify({ phone_number: phone })
+    });
+    const d = await r.json();
+    if (r.ok) { showToast('✅ ' + d.message, 'success'); loadUsers(); loadStats(); }
+    else showToast('❌ ' + (d.detail||'Gagal'), 'error');
+  } catch(e) { showToast('❌ Error: ' + e.message, 'error'); }
 }
 
-// ── STOCKS ──
-async function loadStocks() {
-  const r   = await api('GET','/api/stocks');
-  const list= document.getElementById('stocks-list');
-  const st  = (r.data||[]).slice(0,30);
-  if (!st.length) { list.innerHTML='<p class="text-slate-500 text-sm text-center py-6">Jalankan Force Scrape dulu.</p>'; return; }
-  list.innerHTML = '<div class="mobile-list">' + st.map(s=>`
-    <div class="list-item">
-      <div><div class="text-white text-sm font-bold">${s.ticker}</div>
-      <div class="text-slate-400 text-xs">Vol: ${Number(s.volume||0).toLocaleString('id-ID')}</div></div>
-      <div class="flex items-center gap-2">
-        <div class="text-green-400 text-sm font-semibold">Rp ${Number(s.price||0).toLocaleString('id-ID')}</div>
-        <button class="danger-btn" onclick="deleteStock('${s.ticker}')">✕</button>
-      </div>
-    </div>`).join('') + '</div>';
-}
-async function upsertStock() {
-  const t=document.getElementById('s-ticker').value.trim().toUpperCase();
-  const p=parseFloat(document.getElementById('s-price').value);
-  const v=parseFloat(document.getElementById('s-volume').value)||0;
-  if (!t||!p) return showToast('Isi ticker & harga',true);
-  try { const r=await api('POST','/api/admin/stocks',{ticker:t,price:p,volume:v}); showToast('✅ '+r.message); loadStocks(); }
-  catch(e) { showToast('❌ Gagal',true); }
-}
-async function deleteStock(ticker) {
-  if (!confirm(`Hapus ${ticker}?`)) return;
-  try { await api('DELETE',`/api/admin/stocks/${ticker}`); showToast(`✅ ${ticker} dihapus`); loadStocks(); }
-  catch(e) { showToast('❌ Gagal hapus',true); }
+// ── STOCKS ADMIN ───────────────────────────────────────
+async function loadStocksAdmin() {
+  const tbody = document.getElementById('stocks-admin-table');
+  tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-gray-500 pulse">Memuat...</td></tr>';
+  try {
+    const r = await fetch('/api/stocks?limit=200&sort=volume');
+    const d = await r.json();
+    allStocksAdmin = d.data || [];
+    renderStocksAdmin(allStocksAdmin);
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-red-400">Error: ${e.message}</td></tr>`;
+  }
 }
 
-// ── ALERTS ──
+function renderStocksAdmin(stocks) {
+  const tbody = document.getElementById('stocks-admin-table');
+  if (!stocks.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-gray-500">
+      Belum ada data. <button onclick="triggerFetch()" class="text-neon-blue underline">Fetch GoAPI sekarang →</button>
+    </td></tr>`;
+    return;
+  }
+  const fmt = n => { if(!n&&n!==0) return '—'; if(n>=1e9) return (n/1e9).toFixed(1)+'B'; if(n>=1e6) return (n/1e6).toFixed(1)+'M'; return n.toLocaleString('id-ID'); };
+  tbody.innerHTML = stocks.map(s => {
+    const pct = s.change_pct || 0;
+    const pctColor = pct > 0 ? '#00ff88' : pct < 0 ? '#ff4757' : '#6b7280';
+    const ts = s.updated_at ? new Date(s.updated_at).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) : '—';
+    return `<tr class="border-t hover:bg-gray-900" style="border-color:#1a1a2e">
+      <td class="px-4 py-2.5 font-bold text-white">${s.ticker}</td>
+      <td class="px-4 py-2.5 text-right text-white">Rp ${Number(s.price||0).toLocaleString('id-ID')}</td>
+      <td class="px-4 py-2.5 text-right font-semibold" style="color:${pctColor}">${pct>0?'+':''}${pct.toFixed(2)}%</td>
+      <td class="px-4 py-2.5 text-right text-gray-400 text-xs">${fmt(s.volume)}</td>
+      <td class="px-4 py-2.5 text-right text-gray-600 text-xs">${ts}</td>
+    </tr>`;
+  }).join('');
+}
+
+function filterStocksAdmin(q) {
+  if (!q) return renderStocksAdmin(allStocksAdmin);
+  renderStocksAdmin(allStocksAdmin.filter(s => s.ticker.toLowerCase().includes(q.toLowerCase())));
+}
+
+// ── ALERTS ─────────────────────────────────────────────
 async function loadAlerts() {
-  const r   = await api('GET','/api/alerts');
-  const list= document.getElementById('alerts-list');
-  const al  = r.data||[];
-  if (!al.length) { list.innerHTML='<p class="text-slate-500 text-sm text-center py-6">Belum ada alert.</p>'; return; }
-  list.innerHTML = '<div class="mobile-list">' + al.map(a=>{
-    const dt=new Date((a.timestamp||'')+(a.timestamp?.endsWith('Z')?'':'Z'));
-    return `<div class="list-item">
-      <div><div class="text-white text-sm font-bold">${a.ticker} <span class="text-slate-400 text-xs">Rp ${Number(a.price||0).toLocaleString('id-ID')}</span></div>
-      <div class="text-slate-400 text-xs">${a.indicator_triggered||'—'}</div></div>
-      <div class="text-slate-500 text-xs">${dt.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'})}</div>
-    </div>`;
-  }).join('') + '</div>';
-}
-async function createAlert() {
-  const t=document.getElementById('a-ticker').value.trim().toUpperCase();
-  const p=parseFloat(document.getElementById('a-price').value);
-  const i=document.getElementById('a-indicator').value.trim();
-  const c=document.getElementById('a-chatid').value.trim();
-  if (!t||!p||!i) return showToast('Isi semua field wajib',true);
+  const tbody = document.getElementById('alerts-table');
+  tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-500 pulse">Memuat...</td></tr>';
   try {
-    const r=await api('POST','/api/admin/alerts',{ticker:t,price:p,indicator_triggered:i,telegram_chat_id:c||null});
-    showToast('✅ Alert dikirim! Telegram: '+(r.telegram_sent?'✓':'✗'));
-    loadAlerts();
-  } catch(e) { showToast('❌ Gagal kirim alert',true); }
+    const r = await fetch('/api/alerts?limit=50');
+    const d = await r.json();
+    const alerts = d.data || [];
+    if (!alerts.length) {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-gray-500">Belum ada alert screener</td></tr>';
+      return;
+    }
+    tbody.innerHTML = alerts.map(a => {
+      const ts = a.timestamp ? new Date(a.timestamp).toLocaleString('id-ID') : '—';
+      return `<tr class="border-t" style="border-color:#1a1a2e">
+        <td class="px-4 py-2.5 font-bold" style="color:#ff4757">${a.ticker}</td>
+        <td class="px-4 py-2.5 text-right text-white">Rp ${Number(a.price||0).toLocaleString('id-ID')}</td>
+        <td class="px-4 py-2.5 text-xs" style="color:#8b5cf6">${a.indicator_triggered||'—'}</td>
+        <td class="px-4 py-2.5 text-right text-gray-500 text-xs">${ts}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-red-400">Error: ${e.message}</td></tr>`;
+  }
 }
 
-// ── LOGS ──
+// ── LOGS ───────────────────────────────────────────────
 async function loadLogs() {
-  const list = document.getElementById('logs-list');
+  const el = document.getElementById('logs-list');
+  el.innerHTML = '<div class="text-gray-500 text-sm pulse">Memuat logs...</div>';
   try {
-    const r  = await api('GET', '/api/admin/logs?limit=20');
-    const logs = r.data || [];
-    if (!logs.length) { list.innerHTML='<p class="text-slate-500 text-sm text-center py-6 px-4">Belum ada log.</p>'; return; }
-    list.innerHTML = logs.map(l => {
-      const dt  = new Date((l.created_at||'')+(l.created_at?.endsWith('Z')?'':'Z'));
-      const cls = l.status==='SUCCESS' ? 'badge-ok' : 'badge-err';
-      return `<div class="log-item">
-        <div class="flex items-center justify-between mb-0.5">
-          <span class="text-white text-xs font-medium">${l.service_name||'—'}</span>
-          <span class="badge ${cls}" style="font-size:.62rem;padding:1px 7px;">${l.status}</span>
+    const r = await fetch('/api/admin/logs?limit=50', {
+      headers: {'X-Admin-Secret': ADMIN_SECRET}
+    });
+    const d = await r.json();
+    const logs = d.data || [];
+    if (!logs.length) {
+      el.innerHTML = '<div class="text-gray-500 text-sm">Belum ada log</div>';
+      return;
+    }
+    el.innerHTML = logs.map(l => {
+      const colors = {SUCCESS:'#00ff88',ERROR:'#ff4757',WARNING:'#ffd700',INFO:'#00d4ff'};
+      const c = colors[l.status] || '#6b7280';
+      const ts = l.created_at ? new Date(l.created_at).toLocaleString('id-ID') : '—';
+      return `<div class="p-3 rounded-lg" style="background:#1a1a2e;border-left:3px solid ${c}">
+        <div class="flex justify-between items-start gap-2">
+          <div>
+            <span class="text-xs font-bold" style="color:${c}">[${l.status}]</span>
+            <span class="text-xs text-gray-400 ml-1">${l.service_name}</span>
+          </div>
+          <span class="text-xs text-gray-600 whitespace-nowrap">${ts}</span>
         </div>
-        <div class="text-slate-400 text-xs">${l.message||'—'}</div>
-        <div class="text-slate-600 text-xs mt-1">${dt.toLocaleString('id-ID')}</div>
+        <div class="text-xs text-gray-300 mt-1">${l.message||'—'}</div>
       </div>`;
     }).join('');
   } catch(e) {
-    list.innerHTML='<p class="text-red-400 text-xs text-center py-4 px-4">Error load logs</p>';
+    el.innerHTML = `<div class="text-red-400 text-sm">Error: ${e.message}</div>`;
   }
 }
+
+// ── INIT ───────────────────────────────────────────────
+loadStats();
+checkGoAPI();
+setInterval(loadStats, 60000);
+setInterval(checkGoAPI, 120000);
 </script>
 </body>
 </html>
