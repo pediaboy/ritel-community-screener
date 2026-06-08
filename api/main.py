@@ -41,7 +41,7 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
 GOAPI_KEY      = os.getenv("GOAPI_KEY", "")
 GOAPI_BASE     = "https://api.goapi.io"
-GOAPI_HEADERS  = {"X-API-KEY": GOAPI_KEY, "accept": "application/json"}
+GOAPI_HEADERS  = {"Authorization": GOAPI_KEY, "accept": "application/json"}
 
 # Screener thresholds
 VOLUME_MIN     = 5_000_000
