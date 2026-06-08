@@ -1,6 +1,6 @@
 """
-Ritel Community Screener — v5.0 (GoAPI Full Integration)
-FastAPI backend: GoAPI batching, pandas-ta indicators, Supabase upsert, Telegram alerts
+Ritel Community Screener — v5.2 (GoAPI Full Integration)
+FastAPI backend: GoAPI batching, manual MA20/MACD via pandas, Supabase upsert, Telegram alerts
 """
 
 import os
@@ -18,18 +18,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from supabase import create_client, Client
-
-# ── Pandas-TA (graceful fallback) ─────────────────────────────────────────────
-try:
-    import pandas_ta as ta
-    HAS_TA = True
-except Exception:
-    try:
-        import ta as ta_lib
-        HAS_TA = False  # use ta_lib fallback
-    except Exception:
-        HAS_TA = False
-        ta_lib = None
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CONFIG
@@ -133,8 +121,7 @@ def chunk_list(lst: list, size: int) -> list:
 
 def compute_indicators(prices: list) -> dict:
     """
-    Hitung MA20 dan MACD dari list harga close.
-    Minimal 26 data points untuk MACD.
+    Hitung MA20 dan MACD dari list harga close — pure pandas, tanpa library eksternal.
     Returns: {ma20, macd, macd_signal, indicator_triggered}
     """
     result = {"ma20": None, "macd": None, "macd_signal": None, "indicator_triggered": []}
@@ -142,25 +129,20 @@ def compute_indicators(prices: list) -> dict:
         return result
     s = pd.Series(prices, dtype=float)
     # MA20
-    if len(s) >= 20:
-        result["ma20"] = round(float(s.rolling(20).mean().iloc[-1]), 2)
-    elif len(s) >= 5:
-        result["ma20"] = round(float(s.rolling(len(s)).mean().iloc[-1]), 2)
-    # MACD
+    window = 20 if len(s) >= 20 else len(s)
+    result["ma20"] = round(float(s.rolling(window=window).mean().iloc[-1]), 2)
+    # MACD (butuh minimal 26 data point)
     if len(s) >= 26:
-        if HAS_TA:
-            try:
-                macd_df = ta.macd(s, fast=12, slow=26, signal=9)
-                if macd_df is not None and not macd_df.empty:
-                    cols = macd_df.columns.tolist()
-                    macd_val = float(macd_df[cols[0]].iloc[-1])
-                    sig_val  = float(macd_df[cols[2]].iloc[-1])
-                    result["macd"] = round(macd_val, 4)
-                    result["macd_signal"] = round(sig_val, 4)
-                    if macd_val > sig_val:
-                        result["indicator_triggered"].append("MACD_BULLISH")
-            except Exception:
-                pass
+        ema12       = s.ewm(span=12, adjust=False).mean()
+        ema26       = s.ewm(span=26, adjust=False).mean()
+        macd_line   = ema12 - ema26
+        signal_line = macd_line.ewm(span=9, adjust=False).mean()
+        macd_val    = round(float(macd_line.iloc[-1]), 4)
+        sig_val     = round(float(signal_line.iloc[-1]), 4)
+        result["macd"]        = macd_val
+        result["macd_signal"] = sig_val
+        if macd_val > sig_val:
+            result["indicator_triggered"].append("MACD_BULLISH")
     return result
 
 # ═══════════════════════════════════════════════════════════════════════════════
